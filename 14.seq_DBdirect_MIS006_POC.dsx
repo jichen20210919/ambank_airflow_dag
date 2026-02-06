@@ -1,0 +1,1359 @@
+BEGIN HEADER
+   CharacterSet "CP1252"
+   ExportingTool "IBM InfoSphere DataStage Export"
+   ToolVersion "8"
+   ServerName "MYDVLAIXDSTG01"
+   ToolInstanceID "dbdir"
+   MDISVersion "1.0"
+   Date "2026-01-30"
+   Time "18.13.44"
+   ServerVersion "11.7"
+END HEADER
+BEGIN DSJOB
+   Identifier "seq_DBdirect_MIS006_POC"
+   DateModified "2026-01-08"
+   TimeModified "16.19.22"
+   BEGIN DSRECORD
+      Identifier "ROOT"
+      OLEType "CJobDefn"
+      Readonly "0"
+      Name "seq_DBdirect_MIS006_POC"
+      Description "This sequence triggers the follwing job_DBdirect_MIS006_Extr, job_DBdirect_MIS006_Ld for   EDW table EDW_NZ_MIS006 to load"
+      NextID "361"
+      Container "V0"
+      FullDescription =+=+=+=
+$Workfile:   .dsx  $
+$Revision:   1.0  $
+$Date:    27-AUG-2014   $
+$Author:   Irshad  $
+
+
+Revision Log:
+
+Modified By                     Date                 Cur Ver             Reason
+----------------                        -----------             -----------             -----------------------------------
+Irshad                     27-AUG-2014              1.0                   Initial Version
+
+Irshad                    01-June-2015                1.2                  Included Amhp2 changes
+
+
+
+=+=+=+=
+      JobVersion "56.0.0"
+      JobControlCode =+=+=+=
+* Tokens were replaced below as follows:
+* IdV0S36%%UserVar%%0 <= UserVariables_BinaryDate.UV_Bus_Date
+* IdV0S26%%Result2%%1 <= Sub_Seq_DbDirect_MIS006_Seq.$UserStatus
+* IdV0S26%%Result1%%2 <= Sub_Seq_DbDirect_MIS006_Seq.$JobStatus
+* IdV0S26%%Name%%3 <= Sub_Seq_DbDirect_MIS006_Seq.$JobName
+* IdV0S29%%Result2%%4 <= job_DBdirect_MIS006_DS_Ld.$UserStatus
+* IdV0S29%%Result1%%5 <= job_DBdirect_MIS006_DS_Ld.$JobStatus
+* IdV0S29%%Name%%6 <= job_DBdirect_MIS006_DS_Ld.$JobName
+* IdV0S40%%Result2%%7 <= job_DBdirect_MIS006_Ld.$UserStatus
+* IdV0S40%%Result1%%8 <= job_DBdirect_MIS006_Ld.$JobStatus
+* IdV0S40%%Name%%9 <= job_DBdirect_MIS006_Ld.$JobName
+*
+*** [Generated at 2026-01-08 16:19:21 - 11.7.1.0]
+   $INCLUDE DSINCLUDE DSJ_XFUNCS.H
+   EQU Time$$ Lit "Oconv(Time(), 'MTS:'):': '"
+****************************************
+* Graphical Sequencer generated code for Job seq_DBdirect_MIS006_POC
+****************************************
+   
+   handle$list = ""
+   id$list = ""
+   abort$list = ""
+   b$Abandoning = @False
+   b$CPRestarted = @False
+   b$InErrorRef = @False
+   summary$restarting = @False
+*** Create new checkpoint for sequence if not restarting
+   If DSCheckPointExists(DSJ.ME, cp$dtm) Then GoTo L$RESTART
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0015\\Starting new run of checkpointed Sequence job", ""), "@Coordinator")
+   If (Not(DSCheckPointValidate(DSJ.ME, cp$msg))) Then
+      err$source = "@Coordinator"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0016\\Error creating checkpoint record<L>%1", cp$msg)
+      msg$id = "@Coordinator"; GoTo L$ERROR
+   End
+   GoTo L$MAINSTART
+L$RESTART:
+*** Validate restarted job matches prior state
+   summary$restarting = @True
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0017\\Sequence job is being restarted after failure<L>Checkpoint record last modified at %1", cp$dtm), "@Coordinator")
+   b$CPRestarted = @True
+   If Not(DSCheckPointValidate(DSJ.ME, cp$msg)) Then
+      Call DSLogWarn(cp$msg, "@Coordinator")
+   End
+L$MAINSTART:
+*** Sequence start point
+   summary$ = DSMakeMsg("DSTAGE_JSG_M_0048\\Summary of sequence run", "")
+   If summary$restarting Then
+      summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0049\\Sequence restarted after failure", ""))
+   End Else
+      summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0050\\Sequence started (checkpointing on)", ""))
+   End
+   GoTo L$V0S36$START
+L$RETURN$1:
+   GoTo L$WAITFORJOB
+**************************************************
+L$V0S26$START:
+*** Activity "Sub_Seq_DbDirect_MIS006_Seq": Initialize job
+   b$InErrorRef$V0S26 = b$InErrorRef
+   h$V0S26 = DSAttachJob("Sub_Seq_DbDirect_MIS006_Seq_POC", DSJ.ERRNONE)
+   If (Not(h$V0S26)) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0001\\Error calling DSAttachJob(%1)<L>%2", "Sub_Seq_DbDirect_MIS006_Seq_POC":@FM:DSGetLastErrorMsg())
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   If DSGetJobInfo(h$V0S26, DSJ.JOBMULTIINVOKABLE) Then
+      jb$V0S26 = "Sub_Seq_DbDirect_MIS006_Seq_POC":'.':"Sub_Seq_DbDirect_MIS006_Seq"
+   End Else
+      jb$V0S26 = "Sub_Seq_DbDirect_MIS006_Seq_POC"
+   End
+   dummy$ = DSDetachJob(h$V0S26)
+   b$V0S26skipping = @False
+   h$V0S26$cp = "h$V0S26"
+   If DSCheckPointGetValue(DSJ.ME, h$V0S26$cp, cp$value) = DSJE.NOERROR Then
+      Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0021\\Skipped run of job '%1' on restart", jb$V0S26), "@Sub_Seq_DbDirect_MIS006_Seq")
+      job$V0S26$status = Raise(cp$value<1>)
+      job$V0S26$userstatus = Raise(cp$value<2>)
+      IdV0S26%%Result2%%1 = job$V0S26$userstatus
+      IdV0S26%%Result1%%2 = job$V0S26$status
+      IdV0S26%%Name%%3 = jb$V0S26
+      summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0060\\%1 (JOB %2) skipped", "Sub_Seq_DbDirect_MIS006_Seq":@FM:jb$V0S26))
+      b$V0S26skipping = @True
+      Goto L$V0S26$SKIPPED
+   End
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0057\\%1 (JOB %2) started", "Sub_Seq_DbDirect_MIS006_Seq":@FM:jb$V0S26))
+   h$V0S26 = DSAttachJob(jb$V0S26, DSJ.ERRNONE)
+   If (Not(h$V0S26)) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0001\\Error calling DSAttachJob(%1)<L>%2", jb$V0S26:@FM:DSGetLastErrorMsg())
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   h$V0S26 = DSPrepareJob(h$V0S26)
+   If (Not(h$V0S26)) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0012\\Error calling DSPrepareJob(%1)<L>%2", jb$V0S26:@FM:DSGetLastErrorMsg())
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+L$V0S26$PREPARED:
+   p$V0S26$1 = (dbdir)
+   err$code = DSSetParam(h$V0S26, "dbdir", p$V0S26$1)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$2 = (dbdir.pDB2_DSN)
+   err$code = DSSetParam(h$V0S26, "dbdir.pDB2_DSN", p$V0S26$2)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_DSN":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$3 = (dbdir.pDB2_USER_NM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pDB2_USER_NM", p$V0S26$3)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_USER_NM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$4 = (dbdir.pDB2_PWD)
+   err$code = DSSetParam(h$V0S26, "dbdir.pDB2_PWD", p$V0S26$4)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_PWD":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$5 = (dbdir.pODS_DSN)
+   err$code = DSSetParam(h$V0S26, "dbdir.pODS_DSN", p$V0S26$5)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_DSN":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$6 = (dbdir.pODS_DATABASE)
+   err$code = DSSetParam(h$V0S26, "dbdir.pODS_DATABASE", p$V0S26$6)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_DATABASE":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$7 = (dbdir.pODS_USER_NM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pODS_USER_NM", p$V0S26$7)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_USER_NM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$8 = (dbdir.pODS_PWD)
+   err$code = DSSetParam(h$V0S26, "dbdir.pODS_PWD", p$V0S26$8)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_PWD":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$9 = (dbdir.pMIS_DSN)
+   err$code = DSSetParam(h$V0S26, "dbdir.pMIS_DSN", p$V0S26$9)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_DSN":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$10 = (dbdir.pMIS_DATABASE)
+   err$code = DSSetParam(h$V0S26, "dbdir.pMIS_DATABASE", p$V0S26$10)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_DATABASE":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$11 = (dbdir.pMIS_USER_NM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pMIS_USER_NM", p$V0S26$11)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_USER_NM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$12 = (dbdir.pMIS_PWD)
+   err$code = DSSetParam(h$V0S26, "dbdir.pMIS_PWD", p$V0S26$12)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_PWD":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$13 = (dbdir.pODS_SCHM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pODS_SCHM", p$V0S26$13)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_SCHM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$14 = (dbdir.pODS_AUDIT_SHM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pODS_AUDIT_SHM", p$V0S26$14)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_AUDIT_SHM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$15 = (dbdir.pSTAGING_CORE_SCHM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pSTAGING_CORE_SCHM", p$V0S26$15)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSTAGING_CORE_SCHM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$16 = (dbdir.pWORK_CORE_SCHM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pWORK_CORE_SCHM", p$V0S26$16)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pWORK_CORE_SCHM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$17 = (dbdir.pSOR_SCHM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pSOR_SCHM", p$V0S26$17)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSOR_SCHM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$18 = (dbdir.pCOMMON_SCHM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pCOMMON_SCHM", p$V0S26$18)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pCOMMON_SCHM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$19 = (dbdir.pODS_TABLE_NM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pODS_TABLE_NM", p$V0S26$19)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_TABLE_NM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$20 = (dbdir.pARRIVAL_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pARRIVAL_DIR", p$V0S26$20)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pARRIVAL_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$21 = (dbdir.pSOURCE_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pSOURCE_DIR", p$V0S26$21)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSOURCE_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$22 = (dbdir.pPROCESSING_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pPROCESSING_DIR", p$V0S26$22)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pPROCESSING_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$23 = (dbdir.pREJECTS_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pREJECTS_DIR", p$V0S26$23)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pREJECTS_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$24 = (dbdir.pLOG_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pLOG_DIR", p$V0S26$24)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pLOG_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$25 = (dbdir.pREFERENCE_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pREFERENCE_DIR", p$V0S26$25)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pREFERENCE_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$26 = (dbdir.pARCHIVE_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pARCHIVE_DIR", p$V0S26$26)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pARCHIVE_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$27 = (dbdir.pTARGET_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pTARGET_DIR", p$V0S26$27)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pTARGET_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$28 = (dbdir.pSCRIPTS_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pSCRIPTS_DIR", p$V0S26$28)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSCRIPTS_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$29 = (dbdir.pCONFIG_DIR)
+   err$code = DSSetParam(h$V0S26, "dbdir.pCONFIG_DIR", p$V0S26$29)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pCONFIG_DIR":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$30 = (dbdir.pBUSINESS_DATE)
+   err$code = DSSetParam(h$V0S26, "dbdir.pBUSINESS_DATE", p$V0S26$30)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pBUSINESS_DATE":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$31 = (dbdir.pBATCH_ID)
+   err$code = DSSetParam(h$V0S26, "dbdir.pBATCH_ID", p$V0S26$31)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pBATCH_ID":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$32 = (dbdir.pDB2_SCHM)
+   err$code = DSSetParam(h$V0S26, "dbdir.pDB2_SCHM", p$V0S26$32)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_SCHM":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   p$V0S26$33 = (IdV0S36%%UserVar%%0)
+   err$code = DSSetParam(h$V0S26, "Curr_Date", p$V0S26$33)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "Curr_Date":@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   err$code = DSRunJob(h$V0S26, DSJ.RUNNORMAL)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0003\\Error calling DSRunJob(%1), code=%2[E]", jb$V0S26:@FM:err$code)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   handle$list<-1> = h$V0S26
+   id$list<-1> = "V0S26"
+   GoTo L$V0S36$RETURN$1
+**************************************************
+L$V0S26$FINISHED:
+   job$V0S26$status = DSGetJobInfo(h$V0S26, DSJ.JOBSTATUS)
+   job$V0S26$userstatus = DSGetJobInfo(h$V0S26, DSJ.USERSTATUS)
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0063\\%1 (JOB %2) finished, status=%3[E]", "Sub_Seq_DbDirect_MIS006_Seq":@FM:jb$V0S26:@FM:job$V0S26$status))
+   IdV0S26%%Result2%%1 = job$V0S26$userstatus
+   IdV0S26%%Result1%%2 = job$V0S26$status
+   IdV0S26%%Name%%3 = jb$V0S26
+   If (job$V0S26$status <> DSJS.RUNOK) Then
+      Call DSLogWarn(DSMakeMsg("DSTAGE_JSG_M_0030\\Job %1 did not finish OK, status = '%2'", jb$V0S26:@FM:DSTranslateCode(job$V0S26$status)), "@Sub_Seq_DbDirect_MIS006_Seq")
+   End
+   rpt$V0S26 = DSMakeJobReport(h$V0S26, 1, "CRLF")
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0004\\Report on job: %1<L>%2", jb$V0S26:@FM:rpt$V0S26), "@Sub_Seq_DbDirect_MIS006_Seq")
+   dummy$ = DSDetachJob(h$V0S26)
+   If (job$V0S26$status <> DSJS.RUNOK And job$V0S26$status <> DSJS.RUNWARN And Not(b$Abandoning)) Then
+      err$source = "Sub_Seq_DbDirect_MIS006_Seq"; err$number = 1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0024\\Unhandled abort encountered in job %1", jb$V0S26)
+      msg$id = "@Sub_Seq_DbDirect_MIS006_Seq"; GoTo L$ERROR
+   End
+   If b$InErrorRef$V0S26 Or (job$V0S26$status <> DSJS.RUNOK And job$V0S26$status <> DSJS.RUNWARN) Then Goto L$V0S26$SKIPPED
+   cp$value = Lower(job$V0S26$status)
+   cp$value<2> = Lower(job$V0S26$userstatus)
+   dummy$ = DSCheckPointSetValue(DSJ.ME, h$V0S26$cp, cp$value)
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0025\\Checkpointed run of job '%1'", jb$V0S26), "@Sub_Seq_DbDirect_MIS006_Seq")
+**************************************************
+L$V0S26$SKIPPED:
+   If b$Abandoning Then GoTo L$WAITFORJOB
+   If (IdV0S26%%Result1%%2 =1 Or IdV0S26%%Result1%%2=2) Then GoTo L$V0S29$START
+L$V0S26$RETURN$1:
+   If b$V0S26skipping Then GoTo L$V0S36$RETURN$1
+   GoTo L$WAITFORJOB
+**************************************************
+L$V0S29$START:
+*** Activity "job_DBdirect_MIS006_DS_Ld": Initialize job
+   b$InErrorRef$V0S29 = b$InErrorRef
+   h$V0S29 = DSAttachJob("job_DBdirect_MIS006_DS_Ld_POC", DSJ.ERRNONE)
+   If (Not(h$V0S29)) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0001\\Error calling DSAttachJob(%1)<L>%2", "job_DBdirect_MIS006_DS_Ld_POC":@FM:DSGetLastErrorMsg())
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   If DSGetJobInfo(h$V0S29, DSJ.JOBMULTIINVOKABLE) Then
+      jb$V0S29 = "job_DBdirect_MIS006_DS_Ld_POC":'.':"job_DBdirect_MIS006_DS_Ld"
+   End Else
+      jb$V0S29 = "job_DBdirect_MIS006_DS_Ld_POC"
+   End
+   dummy$ = DSDetachJob(h$V0S29)
+   b$V0S29skipping = @False
+   h$V0S29$cp = "h$V0S29"
+   If DSCheckPointGetValue(DSJ.ME, h$V0S29$cp, cp$value) = DSJE.NOERROR Then
+      Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0021\\Skipped run of job '%1' on restart", jb$V0S29), "@job_DBdirect_MIS006_DS_Ld")
+      job$V0S29$status = Raise(cp$value<1>)
+      job$V0S29$userstatus = Raise(cp$value<2>)
+      IdV0S29%%Result2%%4 = job$V0S29$userstatus
+      IdV0S29%%Result1%%5 = job$V0S29$status
+      IdV0S29%%Name%%6 = jb$V0S29
+      summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0060\\%1 (JOB %2) skipped", "job_DBdirect_MIS006_DS_Ld":@FM:jb$V0S29))
+      b$V0S29skipping = @True
+      Goto L$V0S29$SKIPPED
+   End
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0057\\%1 (JOB %2) started", "job_DBdirect_MIS006_DS_Ld":@FM:jb$V0S29))
+   h$V0S29 = DSAttachJob(jb$V0S29, DSJ.ERRNONE)
+   If (Not(h$V0S29)) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0001\\Error calling DSAttachJob(%1)<L>%2", jb$V0S29:@FM:DSGetLastErrorMsg())
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   h$V0S29 = DSPrepareJob(h$V0S29)
+   If (Not(h$V0S29)) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0012\\Error calling DSPrepareJob(%1)<L>%2", jb$V0S29:@FM:DSGetLastErrorMsg())
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+L$V0S29$PREPARED:
+   p$V0S29$1 = (dbdir)
+   err$code = DSSetParam(h$V0S29, "dbdir", p$V0S29$1)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$2 = (dbdir.pDB2_DSN)
+   err$code = DSSetParam(h$V0S29, "dbdir.pDB2_DSN", p$V0S29$2)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_DSN":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$3 = (dbdir.pDB2_USER_NM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pDB2_USER_NM", p$V0S29$3)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_USER_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$4 = (dbdir.pDB2_PWD)
+   err$code = DSSetParam(h$V0S29, "dbdir.pDB2_PWD", p$V0S29$4)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_PWD":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$5 = (dbdir.pODS_DSN)
+   err$code = DSSetParam(h$V0S29, "dbdir.pODS_DSN", p$V0S29$5)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_DSN":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$6 = (dbdir.pODS_DATABASE)
+   err$code = DSSetParam(h$V0S29, "dbdir.pODS_DATABASE", p$V0S29$6)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_DATABASE":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$7 = (dbdir.pODS_USER_NM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pODS_USER_NM", p$V0S29$7)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_USER_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$8 = (dbdir.pODS_PWD)
+   err$code = DSSetParam(h$V0S29, "dbdir.pODS_PWD", p$V0S29$8)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_PWD":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$9 = (dbdir.pMIS_DSN)
+   err$code = DSSetParam(h$V0S29, "dbdir.pMIS_DSN", p$V0S29$9)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_DSN":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$10 = (dbdir.pMIS_DATABASE)
+   err$code = DSSetParam(h$V0S29, "dbdir.pMIS_DATABASE", p$V0S29$10)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_DATABASE":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$11 = (dbdir.pMIS_USER_NM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pMIS_USER_NM", p$V0S29$11)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_USER_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$12 = (dbdir.pMIS_PWD)
+   err$code = DSSetParam(h$V0S29, "dbdir.pMIS_PWD", p$V0S29$12)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_PWD":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$13 = (dbdir.pODS_SCHM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pODS_SCHM", p$V0S29$13)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$14 = (dbdir.pODS_AUDIT_SHM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pODS_AUDIT_SHM", p$V0S29$14)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_AUDIT_SHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$15 = (dbdir.pSTAGING_CORE_SCHM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pSTAGING_CORE_SCHM", p$V0S29$15)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSTAGING_CORE_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$16 = (dbdir.pWORK_CORE_SCHM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pWORK_CORE_SCHM", p$V0S29$16)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pWORK_CORE_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$17 = (dbdir.pSOR_SCHM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pSOR_SCHM", p$V0S29$17)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSOR_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$18 = (dbdir.pCOMMON_SCHM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pCOMMON_SCHM", p$V0S29$18)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pCOMMON_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$19 = (dbdir.pODS_TABLE_NM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pODS_TABLE_NM", p$V0S29$19)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_TABLE_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$20 = (dbdir.pARRIVAL_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pARRIVAL_DIR", p$V0S29$20)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pARRIVAL_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$21 = (dbdir.pSOURCE_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pSOURCE_DIR", p$V0S29$21)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSOURCE_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$22 = (dbdir.pPROCESSING_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pPROCESSING_DIR", p$V0S29$22)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pPROCESSING_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$23 = (dbdir.pREJECTS_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pREJECTS_DIR", p$V0S29$23)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pREJECTS_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$24 = (dbdir.pLOG_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pLOG_DIR", p$V0S29$24)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pLOG_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$25 = (dbdir.pREFERENCE_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pREFERENCE_DIR", p$V0S29$25)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pREFERENCE_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$26 = (dbdir.pARCHIVE_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pARCHIVE_DIR", p$V0S29$26)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pARCHIVE_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$27 = (dbdir.pTARGET_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pTARGET_DIR", p$V0S29$27)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pTARGET_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$28 = (dbdir.pSCRIPTS_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pSCRIPTS_DIR", p$V0S29$28)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSCRIPTS_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$29 = (dbdir.pCONFIG_DIR)
+   err$code = DSSetParam(h$V0S29, "dbdir.pCONFIG_DIR", p$V0S29$29)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pCONFIG_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$30 = (dbdir.pBUSINESS_DATE)
+   err$code = DSSetParam(h$V0S29, "dbdir.pBUSINESS_DATE", p$V0S29$30)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pBUSINESS_DATE":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$31 = (dbdir.pBATCH_ID)
+   err$code = DSSetParam(h$V0S29, "dbdir.pBATCH_ID", p$V0S29$31)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pBATCH_ID":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$32 = (dbdir.pDB2_SCHM)
+   err$code = DSSetParam(h$V0S29, "dbdir.pDB2_SCHM", p$V0S29$32)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   p$V0S29$33 = (IdV0S36%%UserVar%%0)
+   err$code = DSSetParam(h$V0S29, "Curr_Date", p$V0S29$33)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "Curr_Date":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   err$code = DSRunJob(h$V0S29, DSJ.RUNNORMAL)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0003\\Error calling DSRunJob(%1), code=%2[E]", jb$V0S29:@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   handle$list<-1> = h$V0S29
+   id$list<-1> = "V0S29"
+   GoTo L$V0S26$RETURN$1
+**************************************************
+L$V0S29$FINISHED:
+   job$V0S29$status = DSGetJobInfo(h$V0S29, DSJ.JOBSTATUS)
+   job$V0S29$userstatus = DSGetJobInfo(h$V0S29, DSJ.USERSTATUS)
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0063\\%1 (JOB %2) finished, status=%3[E]", "job_DBdirect_MIS006_DS_Ld":@FM:jb$V0S29:@FM:job$V0S29$status))
+   IdV0S29%%Result2%%4 = job$V0S29$userstatus
+   IdV0S29%%Result1%%5 = job$V0S29$status
+   IdV0S29%%Name%%6 = jb$V0S29
+   If (job$V0S29$status <> DSJS.RUNOK) Then
+      Call DSLogWarn(DSMakeMsg("DSTAGE_JSG_M_0030\\Job %1 did not finish OK, status = '%2'", jb$V0S29:@FM:DSTranslateCode(job$V0S29$status)), "@job_DBdirect_MIS006_DS_Ld")
+   End
+   rpt$V0S29 = DSMakeJobReport(h$V0S29, 1, "CRLF")
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0004\\Report on job: %1<L>%2", jb$V0S29:@FM:rpt$V0S29), "@job_DBdirect_MIS006_DS_Ld")
+   dummy$ = DSDetachJob(h$V0S29)
+   If (job$V0S29$status <> DSJS.RUNOK And job$V0S29$status <> DSJS.RUNWARN And Not(b$Abandoning)) Then
+      err$source = "job_DBdirect_MIS006_DS_Ld"; err$number = 1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0024\\Unhandled abort encountered in job %1", jb$V0S29)
+      msg$id = "@job_DBdirect_MIS006_DS_Ld"; GoTo L$ERROR
+   End
+   If b$InErrorRef$V0S29 Or (job$V0S29$status <> DSJS.RUNOK And job$V0S29$status <> DSJS.RUNWARN) Then Goto L$V0S29$SKIPPED
+   cp$value = Lower(job$V0S29$status)
+   cp$value<2> = Lower(job$V0S29$userstatus)
+   dummy$ = DSCheckPointSetValue(DSJ.ME, h$V0S29$cp, cp$value)
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0025\\Checkpointed run of job '%1'", jb$V0S29), "@job_DBdirect_MIS006_DS_Ld")
+**************************************************
+L$V0S29$SKIPPED:
+   If b$Abandoning Then GoTo L$WAITFORJOB
+   GoTo L$V0S40$START
+L$V0S29$RETURN$1:
+   If b$V0S29skipping Then GoTo L$V0S26$RETURN$1
+   GoTo L$WAITFORJOB
+**************************************************
+L$V0S36$START:
+*** Set user variables: "UserVariables_BinaryDate"
+   IdV0S36%%UserVar%%0 = ((Iconv(dbdir.pBUSINESS_DATE, 'DYMD[4,2,2]') + 24836))
+   GoTo L$V0S26$START
+L$V0S36$RETURN$1:
+   GoTo L$RETURN$1
+**************************************************
+L$V0S40$START:
+*** Activity "job_DBdirect_MIS006_Ld": Initialize job
+   b$InErrorRef$V0S40 = b$InErrorRef
+   h$V0S40 = DSAttachJob("job_DBdirect_MIS006_Ld_POC", DSJ.ERRNONE)
+   If (Not(h$V0S40)) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0001\\Error calling DSAttachJob(%1)<L>%2", "job_DBdirect_MIS006_Ld_POC":@FM:DSGetLastErrorMsg())
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   If DSGetJobInfo(h$V0S40, DSJ.JOBMULTIINVOKABLE) Then
+      jb$V0S40 = "job_DBdirect_MIS006_Ld_POC":'.':"job_DBdirect_MIS006_Ld"
+   End Else
+      jb$V0S40 = "job_DBdirect_MIS006_Ld_POC"
+   End
+   dummy$ = DSDetachJob(h$V0S40)
+   b$V0S40skipping = @False
+   h$V0S40$cp = "h$V0S40"
+   If DSCheckPointGetValue(DSJ.ME, h$V0S40$cp, cp$value) = DSJE.NOERROR Then
+      Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0021\\Skipped run of job '%1' on restart", jb$V0S40), "@job_DBdirect_MIS006_Ld")
+      job$V0S40$status = Raise(cp$value<1>)
+      job$V0S40$userstatus = Raise(cp$value<2>)
+      IdV0S40%%Result2%%7 = job$V0S40$userstatus
+      IdV0S40%%Result1%%8 = job$V0S40$status
+      IdV0S40%%Name%%9 = jb$V0S40
+      summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0060\\%1 (JOB %2) skipped", "job_DBdirect_MIS006_Ld":@FM:jb$V0S40))
+      b$V0S40skipping = @True
+      Goto L$V0S40$SKIPPED
+   End
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0057\\%1 (JOB %2) started", "job_DBdirect_MIS006_Ld":@FM:jb$V0S40))
+   h$V0S40 = DSAttachJob(jb$V0S40, DSJ.ERRNONE)
+   If (Not(h$V0S40)) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0001\\Error calling DSAttachJob(%1)<L>%2", jb$V0S40:@FM:DSGetLastErrorMsg())
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   h$V0S40 = DSPrepareJob(h$V0S40)
+   If (Not(h$V0S40)) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0012\\Error calling DSPrepareJob(%1)<L>%2", jb$V0S40:@FM:DSGetLastErrorMsg())
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+L$V0S40$PREPARED:
+   p$V0S40$1 = (dbdir)
+   err$code = DSSetParam(h$V0S40, "dbdir", p$V0S40$1)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$2 = (dbdir.pDB2_DSN)
+   err$code = DSSetParam(h$V0S40, "dbdir.pDB2_DSN", p$V0S40$2)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_DSN":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$3 = (dbdir.pDB2_USER_NM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pDB2_USER_NM", p$V0S40$3)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_USER_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$4 = (dbdir.pDB2_PWD)
+   err$code = DSSetParam(h$V0S40, "dbdir.pDB2_PWD", p$V0S40$4)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_PWD":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$5 = (dbdir.pODS_DSN)
+   err$code = DSSetParam(h$V0S40, "dbdir.pODS_DSN", p$V0S40$5)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_DSN":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$6 = (dbdir.pODS_DATABASE)
+   err$code = DSSetParam(h$V0S40, "dbdir.pODS_DATABASE", p$V0S40$6)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_DATABASE":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$7 = (dbdir.pODS_USER_NM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pODS_USER_NM", p$V0S40$7)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_USER_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$8 = (dbdir.pODS_PWD)
+   err$code = DSSetParam(h$V0S40, "dbdir.pODS_PWD", p$V0S40$8)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_PWD":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$9 = (dbdir.pMIS_DSN)
+   err$code = DSSetParam(h$V0S40, "dbdir.pMIS_DSN", p$V0S40$9)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_DSN":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$10 = (dbdir.pMIS_DATABASE)
+   err$code = DSSetParam(h$V0S40, "dbdir.pMIS_DATABASE", p$V0S40$10)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_DATABASE":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$11 = (dbdir.pMIS_USER_NM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pMIS_USER_NM", p$V0S40$11)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_USER_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$12 = (dbdir.pMIS_PWD)
+   err$code = DSSetParam(h$V0S40, "dbdir.pMIS_PWD", p$V0S40$12)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pMIS_PWD":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$13 = (dbdir.pODS_SCHM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pODS_SCHM", p$V0S40$13)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$14 = (dbdir.pODS_AUDIT_SHM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pODS_AUDIT_SHM", p$V0S40$14)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_AUDIT_SHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$15 = (dbdir.pSTAGING_CORE_SCHM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pSTAGING_CORE_SCHM", p$V0S40$15)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSTAGING_CORE_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$16 = (dbdir.pWORK_CORE_SCHM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pWORK_CORE_SCHM", p$V0S40$16)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pWORK_CORE_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$17 = (dbdir.pSOR_SCHM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pSOR_SCHM", p$V0S40$17)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSOR_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$18 = (dbdir.pCOMMON_SCHM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pCOMMON_SCHM", p$V0S40$18)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pCOMMON_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$19 = (dbdir.pODS_TABLE_NM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pODS_TABLE_NM", p$V0S40$19)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pODS_TABLE_NM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$20 = (dbdir.pARRIVAL_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pARRIVAL_DIR", p$V0S40$20)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pARRIVAL_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$21 = (dbdir.pSOURCE_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pSOURCE_DIR", p$V0S40$21)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSOURCE_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$22 = (dbdir.pPROCESSING_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pPROCESSING_DIR", p$V0S40$22)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pPROCESSING_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$23 = (dbdir.pREJECTS_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pREJECTS_DIR", p$V0S40$23)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pREJECTS_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$24 = (dbdir.pLOG_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pLOG_DIR", p$V0S40$24)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pLOG_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$25 = (dbdir.pREFERENCE_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pREFERENCE_DIR", p$V0S40$25)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pREFERENCE_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$26 = (dbdir.pARCHIVE_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pARCHIVE_DIR", p$V0S40$26)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pARCHIVE_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$27 = (dbdir.pTARGET_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pTARGET_DIR", p$V0S40$27)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pTARGET_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$28 = (dbdir.pSCRIPTS_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pSCRIPTS_DIR", p$V0S40$28)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pSCRIPTS_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$29 = (dbdir.pCONFIG_DIR)
+   err$code = DSSetParam(h$V0S40, "dbdir.pCONFIG_DIR", p$V0S40$29)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pCONFIG_DIR":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$30 = (dbdir.pBUSINESS_DATE)
+   err$code = DSSetParam(h$V0S40, "dbdir.pBUSINESS_DATE", p$V0S40$30)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pBUSINESS_DATE":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$31 = (dbdir.pBATCH_ID)
+   err$code = DSSetParam(h$V0S40, "dbdir.pBATCH_ID", p$V0S40$31)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pBATCH_ID":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   p$V0S40$32 = (dbdir.pDB2_SCHM)
+   err$code = DSSetParam(h$V0S40, "dbdir.pDB2_SCHM", p$V0S40$32)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0002\\Error calling DSSetParam(%1), code=%2[E]", "dbdir.pDB2_SCHM":@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   err$code = DSRunJob(h$V0S40, DSJ.RUNNORMAL)
+   If (err$code <> DSJE.NOERROR) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = -1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0003\\Error calling DSRunJob(%1), code=%2[E]", jb$V0S40:@FM:err$code)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   handle$list<-1> = h$V0S40
+   id$list<-1> = "V0S40"
+   GoTo L$V0S29$RETURN$1
+**************************************************
+L$V0S40$FINISHED:
+   job$V0S40$status = DSGetJobInfo(h$V0S40, DSJ.JOBSTATUS)
+   job$V0S40$userstatus = DSGetJobInfo(h$V0S40, DSJ.USERSTATUS)
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0063\\%1 (JOB %2) finished, status=%3[E]", "job_DBdirect_MIS006_Ld":@FM:jb$V0S40:@FM:job$V0S40$status))
+   IdV0S40%%Result2%%7 = job$V0S40$userstatus
+   IdV0S40%%Result1%%8 = job$V0S40$status
+   IdV0S40%%Name%%9 = jb$V0S40
+   If (job$V0S40$status <> DSJS.RUNOK) Then
+      Call DSLogWarn(DSMakeMsg("DSTAGE_JSG_M_0030\\Job %1 did not finish OK, status = '%2'", jb$V0S40:@FM:DSTranslateCode(job$V0S40$status)), "@job_DBdirect_MIS006_Ld")
+   End
+   rpt$V0S40 = DSMakeJobReport(h$V0S40, 1, "CRLF")
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0004\\Report on job: %1<L>%2", jb$V0S40:@FM:rpt$V0S40), "@job_DBdirect_MIS006_Ld")
+   dummy$ = DSDetachJob(h$V0S40)
+   If (job$V0S40$status <> DSJS.RUNOK And job$V0S40$status <> DSJS.RUNWARN And Not(b$Abandoning)) Then
+      err$source = "job_DBdirect_MIS006_Ld"; err$number = 1
+      msg$ = DSMakeMsg("DSTAGE_JSG_M_0024\\Unhandled abort encountered in job %1", jb$V0S40)
+      msg$id = "@job_DBdirect_MIS006_Ld"; GoTo L$ERROR
+   End
+   If b$InErrorRef$V0S40 Or (job$V0S40$status <> DSJS.RUNOK And job$V0S40$status <> DSJS.RUNWARN) Then Goto L$V0S40$SKIPPED
+   cp$value = Lower(job$V0S40$status)
+   cp$value<2> = Lower(job$V0S40$userstatus)
+   dummy$ = DSCheckPointSetValue(DSJ.ME, h$V0S40$cp, cp$value)
+   Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0025\\Checkpointed run of job '%1'", jb$V0S40), "@job_DBdirect_MIS006_Ld")
+**************************************************
+L$V0S40$SKIPPED:
+   If b$V0S40skipping Then GoTo L$V0S29$RETURN$1
+   GoTo L$WAITFORJOB
+**************************************************
+L$WAITFORJOB:
+   If handle$list = "" Then GoTo L$FINISH
+   handle$ = DSWaitForJob(handle$list)
+   If handle$ = 0 Then handle$ = handle$list<1>
+   Locate handle$ In handle$list Setting index$ Then
+      id$ = id$list<index$>
+      Del id$list<index$>; Del handle$list<index$>
+      b$Abandoning = abort$list<index$>; Del abort$list<index$>
+      Begin Case
+      Case id$ = "V0S26"
+         GoTo L$V0S26$FINISHED
+      Case id$ = "V0S29"
+         GoTo L$V0S29$FINISHED
+      Case id$ = "V0S40"
+         GoTo L$V0S40$FINISHED
+      End Case
+   End
+* Error if fall though
+   handle$list = ""
+   err$source = "@Coordinator"; err$number = -1
+   msg$ = DSMakeMsg("DSTAGE_JSG_M_0008\\Error calling DSWaitForJob(), code=%1[E]", handle$)
+   msg$id = "@Coordinator"; GoTo L$ERROR
+**************************************************
+L$ERROR:
+   Call DSLogWarn(DSMakeMsg("DSTAGE_JSG_M_0009\\Controller problem: %1", msg$), msg$id)
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0052\\Exception raised: %1", msg$id:", ":msg$))
+   If Not(b$InErrorRef) Then
+      dummy$ = DSCheckPointSetValue(DSJ.ME, "!", DSMakeMsg("DSTAGE_JSG_M_0031\\Failed at: %1, Reason=%2", err$source:@FM:msg$))
+   End
+   abort$list = Ifs(handle$list, Str(1:@FM, DCount(handle$list, @FM)), "")
+   b$Abandoning = @True
+   GoTo L$WAITFORJOB
+L$ABORT:
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0055\\Sequence failed (restartable)", ""))
+   x$masked$summary = summary$
+   Call DSMaskExecArgs(x$masked$summary, '')
+   Call DSLogInfo(x$masked$summary, "@Coordinator")
+   Call DSLogFatal(DSMakeMsg("DSTAGE_JSG_M_0014\\Sequence job (restartable) will abort due to previous unrecoverable errors", ""), "@Coordinator")
+**************************************************
+L$FINISH:
+   If b$Abandoning Then GoTo L$ABORT
+*** At successful exit remove checkpoint record
+   If Not(b$InErrorRef) And DSCheckPointExists(DSJ.ME, cp$dtm) Then
+      dummy$ = DSCheckPointDelete(DSJ.ME)
+      Call DSLogInfo(DSMakeMsg("DSTAGE_JSG_M_0018\\Removed checkpoint record at successful completion of sequence", ""), "@Coordinator")
+   End
+   summary$<1,-1> = Time$$:Convert(@VM, " ", DSMakeMsg("DSTAGE_JSG_M_0054\\Sequence finished OK", ""))
+   x$masked$summary = summary$
+   Call DSMaskExecArgs(x$masked$summary, '')
+   Call DSLogInfo(x$masked$summary, "@Coordinator")
+   L$EXIT: Return To L$EXIT
+ 
+
+=+=+=+=
+      ControlAfterSubr "0"
+      Parameters "CParameters"
+      BEGIN DSSUBRECORD
+         Name "dbdir"
+         Prompt "dbdir parameters"
+         Default "(As pre-defined)"
+         HelpTxt "PARAMETER SET FOR DBDIRECT"
+         ParamType "13"
+         ParamLength "0"
+         ParamScale "0"
+      END DSSUBRECORD
+      MetaBag "CMetaProperty"
+      BEGIN DSSUBRECORD
+         Owner "APT"
+         Name "AdvancedRuntimeOptions"
+         Value "#DSProjectARTOptions#"
+      END DSSUBRECORD
+      BEGIN DSSUBRECORD
+         Owner "APT"
+         Name "SequenceUseGridProperties"
+         Value "0"
+      END DSSUBRECORD
+      NULLIndicatorPosition "0"
+      Dependencies "CJobDepend"
+      BEGIN DSSUBRECORD
+         Name "Sub_Seq_DbDirect_MIS006_Seq_POC"
+         Type "0"
+      END DSSUBRECORD
+      BEGIN DSSUBRECORD
+         Name "job_DBdirect_MIS006_DS_Ld_POC"
+         Type "0"
+      END DSSUBRECORD
+      BEGIN DSSUBRECORD
+         Name "job_DBdirect_MIS006_Ld_POC"
+         Type "0"
+      END DSSUBRECORD
+      IsTemplate "0"
+      NLSLocale ",,,,"
+      JobType "2"
+      Category "\\Jobs\\01_TEST\\MIS006\\EDM_POC"
+      CenturyBreakYear "30"
+      NextAliasID "2"
+      ParameterFileDDName "DD00001"
+      ReservedWordCheck "1"
+      TransactionSize "0"
+      ValidationStatus "0"
+      Uploadable "0"
+      PgmCustomizationFlag "0"
+      JobReportFlag "0"
+      AllowMultipleInvocations "0"
+      JobSeqCodeGenOpts "checkpoints,logjoberrors,logjobreports,handleaborts"
+      Act2ActOverideDefaults "0"
+      Act2ActEnableRowBuffer "0"
+      Act2ActUseIPC "0"
+      Act2ActBufferSize "0"
+      Act2ActIPCTimeout "0"
+      ExpressionSemanticCheckFlag "0"
+      TraceOption "0"
+      EnableCacheSharing "0"
+      RuntimeColumnPropagation "1"
+      RelStagesInJobStatus "-1"
+      WebServiceEnabled "0"
+      MFProcessMetaData "0"
+      MFProcessMetaDataXMLFileExchangeMethod "0"
+      IMSProgType "0"
+      CopyLibPrefix "ARDT"
+      RecordPerformanceResults "0"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0"
+      OLEType "CContainerView"
+      Readonly "0"
+      Name "Job"
+      NextID "1"
+      IsTopLevel "0"
+      StageList "V0A12|V0S26|V0S29|V0S36|V0S40"
+      StageXPos "359|432|696|432|960"
+      StageYPos "29|288|288|144|288"
+      StageTypes "ID_PALETTEANNOTATION|CJSJobActivity|CJSJobActivity|CJSUserVarsActivity|CJSJobActivity"
+      NextStageID "41"
+      SnapToGrid "1"
+      GridLines "0"
+      ZoomValue "100"
+      StageXSize "367|48|48|48|48"
+      StageYSize "68|48|48|48|48"
+      ContainerViewSizing "0132 0174 1168 0772 0000 0001 0325 0115"
+      StageNames " |Sub_Seq_DbDirect_MIS006_Seq|job_DBdirect_MIS006_DS_Ld|UserVariables_BinaryDate|job_DBdirect_MIS006_Ld"
+      StageTypeIDs " |CJobActivity|CJobActivity|CUserVarsActivity|CJobActivity"
+      LinkNames " |Dataset_Load|Final_NZ_Load|Sub_Seq_DbDirect_MIS006_Seq| "
+      LinkHasMetaDatas " |False|False|False| "
+      LinkTypes " |1|1|1| "
+      LinkNamePositionXs " |581|803|456| "
+      LinkNamePositionYs " |314|313|219| "
+      TargetStageIDs " |V0S29|V0S40|V0S26| "
+      SourceStageEffectiveExecutionModes " |0|0|0| "
+      SourceStageRuntimeExecutionModes " |0|0|0| "
+      TargetStageEffectiveExecutionModes " |0|0|0| "
+      TargetStageRuntimeExecutionModes " |0|0|0| "
+      LinkIsSingleOperatorLookup " |False|False|False| "
+      LinkIsSortSequential " |False|False|False| "
+      LinkSortMode " |0|0|0| "
+      LinkPartColMode " |0|0|0| "
+      LinkSourcePinIDs " |V0S26P1|V0S29P2|V0S36P1| "
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0A12"
+      OLEType "CAnnotation"
+      Readonly "0"
+      Name "V0A12"
+      NextID "0"
+      AnnotationType "0"
+      AnnotationText "This sequence triggers the follwing job_DBdirect_MIS006_Extr, job_DBdirect_MIS006_Ld for   EDW table EDW_NZ_MIS006 to load"
+      TextFont "MS Shell Dlg\\10\\0\\0\\0\\400\\0"
+      TextHorizontalJustification "1"
+      TextVerticalJustification "1"
+      TextColor "0"
+      BackgroundColor "12713983"
+      BackgroundTransparent "0"
+      BorderVisible "1"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S26"
+      OLEType "CJSJobActivity"
+      Readonly "0"
+      Name "Sub_Seq_DbDirect_MIS006_Seq"
+      NextID "5"
+      InputPins "V0S26P4"
+      OutputPins "V0S26P1"
+      JobType "0"
+      ExecutionType "1"
+      Jobname "Sub_Seq_DbDirect_MIS006_Seq_POC"
+      ParameterValues "CParamValues"
+      BEGIN DSSUBRECORD
+         Name "dbdir"
+         Description "dbdir"
+         ValueType "4"
+         DisplayValue "dbdir"
+      END DSSUBRECORD
+      BEGIN DSSUBRECORD
+         Name "Curr_Date"
+         Description "UserVariables_BinaryDate.UV_Bus_Date"
+         ValueType "4"
+         DisplayValue "UserVariables_BinaryDate.UV_Bus_Date"
+      END DSSUBRECORD
+      CheckPoint "0"
+      StageType "CJobActivity"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S26P1"
+      OLEType "CJSActivityOutput"
+      Readonly "0"
+      Name "Dataset_Load"
+      Partner "V0S29|V0S29P1"
+      ConditionType "6"
+      TriggerExpression "Sub_Seq_DbDirect_MIS006_Seq.$JobStatus =1 Or Sub_Seq_DbDirect_MIS006_Seq.$JobStatus=2"
+      LeftTextPos "581"
+      TopTextPos "314"
+      SourceID "V0S26"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S26P4"
+      OLEType "CJSActivityInput"
+      Readonly "0"
+      Name "Sub_Seq_DbDirect_MIS006_Seq"
+      Partner "V0S36|V0S36P1"
+      LinkType "1"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S29"
+      OLEType "CJSJobActivity"
+      Readonly "0"
+      Name "job_DBdirect_MIS006_DS_Ld"
+      NextID "3"
+      InputPins "V0S29P1"
+      OutputPins "V0S29P2"
+      JobType "0"
+      ExecutionType "1"
+      Jobname "job_DBdirect_MIS006_DS_Ld_POC"
+      ParameterValues "CParamValues"
+      BEGIN DSSUBRECORD
+         Name "dbdir"
+         Description "dbdir"
+         ValueType "4"
+         DisplayValue "dbdir"
+      END DSSUBRECORD
+      BEGIN DSSUBRECORD
+         Name "Curr_Date"
+         Description "UserVariables_BinaryDate.UV_Bus_Date"
+         ValueType "4"
+         DisplayValue "UserVariables_BinaryDate.UV_Bus_Date"
+      END DSSUBRECORD
+      CheckPoint "0"
+      StageType "CJobActivity"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S29P1"
+      OLEType "CJSActivityInput"
+      Readonly "0"
+      Name "Dataset_Load"
+      Partner "V0S26|V0S26P1"
+      LinkType "1"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S29P2"
+      OLEType "CJSActivityOutput"
+      Readonly "0"
+      Name "Final_NZ_Load"
+      Partner "V0S40|V0S40P1"
+      ConditionType "0"
+      LeftTextPos "803"
+      TopTextPos "313"
+      SourceID "V0S29"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S36"
+      OLEType "CJSUserVarsActivity"
+      Readonly "0"
+      Name "UserVariables_BinaryDate"
+      NextID "2"
+      OutputPins "V0S36P1"
+      Variables "CParamValues"
+      BEGIN DSSUBRECORD
+         Name "UV_Bus_Date"
+         Description "(Iconv(dbdir.pBUSINESS_DATE, 'DYMD[4,2,2]') +24836)"
+         ValueType "0"
+      END DSSUBRECORD
+      StageType "CUserVarsActivity"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S36P1"
+      OLEType "CJSActivityOutput"
+      Readonly "0"
+      Name "Sub_Seq_DbDirect_MIS006_Seq"
+      Partner "V0S26|V0S26P4"
+      ConditionType "0"
+      LeftTextPos "456"
+      TopTextPos "219"
+      SourceID "V0S36"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S40"
+      OLEType "CJSJobActivity"
+      Readonly "0"
+      Name "job_DBdirect_MIS006_Ld"
+      NextID "2"
+      InputPins "V0S40P1"
+      JobType "0"
+      ExecutionType "1"
+      Jobname "job_DBdirect_MIS006_Ld_POC"
+      ParameterValues "CParamValues"
+      BEGIN DSSUBRECORD
+         Name "dbdir"
+         Description "dbdir"
+         ValueType "4"
+         DisplayValue "dbdir"
+      END DSSUBRECORD
+      CheckPoint "0"
+      StageType "CJobActivity"
+   END DSRECORD
+   BEGIN DSRECORD
+      Identifier "V0S40P1"
+      OLEType "CJSActivityInput"
+      Readonly "0"
+      Name "Final_NZ_Load"
+      Partner "V0S29|V0S29P2"
+      LinkType "1"
+   END DSRECORD
+END DSJOB
