@@ -21,6 +21,8 @@ from pyspark import SparkContext
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col,expr,lit
 from pyspark.sql.functions import lit, col, input_file_name
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 from pyspark.sql.types import *
 import json
 import logging
@@ -371,11 +373,122 @@ def Copy_of_Transformer_149(spark: SparkSession, sc: SparkContext, **kw_args):
     
     
     Copy_of_Transformer_149_DSLink148_Part_v=spark.table('Copy_of_Transformer_149_DSLink148_Part_v')
-    
-    Copy_of_Transformer_149_v = Copy_of_Transformer_149_DSLink148_Part_v.withColumn('Last', expr("""CASE WHEN LEAD(B_KEY) OVER (PARTITION BY B_KEY ORDER BY B_KEY ASC NULLS LAST) IS NULL THEN TRUE ELSE FALSE END""").cast('integer').alias('Last')).withColumn('C', expr("""IF(D = 0, START_DATE_X, CONCAT_WS('', CONCAT_WS('', B, ','), START_DATE_X))""").cast('string').alias('C')).withColumn('B', col('C').cast('string').alias('B')).withColumn('E', expr("""COUNT(C, ',') + 1""").cast('integer').alias('E')).withColumn('F', expr("""IF(D = 0, REPAYMENT_X, CONCAT_WS('', CONCAT_WS('', G, ','), REPAYMENT_X))""").cast('string').alias('F')).withColumn('G', col('F').cast('string').alias('G')).withColumn('COL', expr("""IF(D = 0, POST_DATE, CONCAT_WS('', CONCAT_WS('', COL, ','), POST_DATE))""").cast('string').alias('COL')).withColumn('SD', expr("""IF(D = 0, START_DATE_01, CONCAT_WS('', CONCAT_WS('', SD, ','), START_DATE_01))""").cast('string').alias('SD')).withColumn('RT', expr("""IF(D = 0, CONCAT_WS('', CONCAT_WS('', (IF(ISNOTNULL((REPAYMENT_TYPE_01)), (REPAYMENT_TYPE_01), (''))), '~'), PRINC_DUE_01), CONCAT_WS('', CONCAT_WS('', CONCAT_WS('', CONCAT_WS('', RT, ','), (IF(ISNOTNULL((REPAYMENT_TYPE_01)), (REPAYMENT_TYPE_01), ('')))), '~'), PRINC_DUE_01))""").cast('string').alias('RT')).withColumn('REP', expr("""IF(D = 0, (IF(ISNOTNULL((REPAYMENT_01)), (REPAYMENT_01), '')), CONCAT_WS('', CONCAT_WS('', REP, ','), (IF(ISNOTNULL((REPAYMENT_01)), (REPAYMENT_01), ''))))""").cast('string').alias('REP')).withColumn('BAL', expr("""IF(D = 0, BALANCE_01, CONCAT_WS('', CONCAT_WS('', BAL, ','), BALANCE_01))""").cast('string').alias('BAL')).withColumn('Q', expr("""IF(E > 400, 27, (IF(E > 300, 21, (IF(E > 200, 14, (IF(E > 100, 7, 1)))))))""").cast('integer').alias('Q')).withColumn('D', expr("""IF(Last, 0, 1)""").cast('integer').alias('D'))
-    
-    Copy_of_Transformer_149_DSLink151_v = Copy_of_Transformer_149_v.select(col('B_KEY').cast('string').alias('B_KEY'),expr("""IF(Z = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(C, ',', Z)))""").cast('integer').alias('START_DATE_X'),expr("""IF(Z = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(F, ',', Z)))""").cast('decimal(17,3)').alias('REPAYMENT_X'),expr("""DS_FIELD(SD, ',', (IF(P = 0, FLOOR(${ITERATION} / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('START_DATE_01'),expr("""IF(P = 0, REPAYMENT_01, (DS_FIELD(REP, ',', (IF(P = 0, FLOOR(${ITERATION} / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('REPAYMENT_01'),expr("""IF(DS_FIELD(DS_FIELD(RT, ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 1) = '', NULL, DS_FIELD(DS_FIELD(RT, ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 1))""").cast('string').alias('REPAYMENT_TYPE_01'),expr("""IF(DS_FIELD(DS_FIELD(RT, ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 2) = '', NULL, DS_FIELD(DS_FIELD(RT, ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 2))""").cast('decimal(17,3)').alias('PRINC_DUE_01'),col('INSUR_AMT_DUE_01').cast('decimal(17,3)').alias('INSUR_AMT_DUE_01'),expr("""DS_FIELD(COL, ',', (IF(P = 0, FLOOR(${ITERATION} / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('POST_DATE'),expr("""IF(P = 0, BALANCE_01, (DS_FIELD(BAL, ',', (IF(P = 0, FLOOR(${ITERATION} / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('BALANCE_01'),expr("""IF(P = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(C, ',', P - 1)))""").cast('integer').alias('LAST_PAY_DATE_X'),expr("""IF(R1 = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(C, ',', R1)))""").cast('integer').alias('NEXT_DUE_DATE_X'),col('CIV_ACT_COD_DAT').cast('integer').alias('CIV_ACT_COD_DAT'),col('LEGAL_MARKER_FLAG').cast('string').alias('LEGAL_MARKER_FLAG'),col('CIV_ACT_CODE').cast('string').alias('CIV_ACT_CODE'),col('LGL_TAG').cast('string').alias('LGL_TAG'),col('LGL_TAG_DATE').cast('integer').alias('LGL_TAG_DATE'))
-    
+    # 1. Setup the Grouping and History Collection
+    # Replicates StageVars: C, F, COL, SD, RT, REP, BAL
+    df_grouped = Copy_of_Transformer_149_DSLink148_Part_v.groupBy("B_KEY").agg(
+        F.collect_list("START_DATE_X").alias("C"),
+        F.collect_list("REPAYMENT_X").alias("F"),
+        F.collect_list("POST_DATE").alias("COL"),
+        F.collect_list("START_DATE_01").alias("SD"),
+        F.collect_list("REPAYMENT_01").alias("REP"),
+        F.collect_list("BALANCE_01").alias("BAL"),
+        # RT Logic: String concatenation with '~' delimiter
+        F.expr("""
+            collect_list(concat(coalesce(REPAYMENT_TYPE_01, ''), '~', PRINC_DUE_01))
+        """).alias("RT"),
+        F.first("CURR_DATE").alias("CURR_DATE"),
+        F.first("CREDIT_ARREARS").alias("CREDIT_ARREARS"),
+        F.first("REPAYMENT_01").alias("REP_ORIG"),    # For the iteration == 0 fallback
+        F.first("BALANCE_01").alias("BAL_ORIG"),       # For the iteration == 0 fallback
+        F.first("INSUR_AMT_DUE_01").alias("INSUR_AMT_DUE_01"),
+        F.first("CIV_ACT_COD_DAT").alias("CIV_ACT_COD_DAT"),
+        F.first("LEGAL_MARKER_FLAG").alias("LEGAL_MARKER_FLAG"),
+        F.first("CIV_ACT_CODE").alias("CIV_ACT_CODE"),
+        F.first("LGL_TAG").alias("LGL_TAG")
+        ,F.first("LGL_TAG_DATE").alias("LGL_TAG_DATE")
+
+
+        
+    )
+
+    # 2. Calculate Loop Variables (Z, P, R1) using Array Operations
+    df_processed = df_grouped.withColumn(
+        "E", F.size(F.col("C"))
+    ).withColumn(
+        # Z: First index (1-based) where START_DATE_X > CURR_DATE
+        "Z", F.expr("""
+            element_at(filter(transform(C, (x, i) -> i + 1), 
+            (x, i) -> CAST(C[i] AS DOUBLE) > CURR_DATE), 1)
+        """)
+    ).withColumn(
+        # P: First index (1-based) where START_DATE_X == 0
+        "P", F.expr("""
+            element_at(filter(transform(C, (x, i) -> i + 1), 
+            (x, i) -> CAST(C[i] AS DOUBLE) == 0), 1)
+        """)
+    ).withColumn(
+        # R1: The iteration where credit arrears (CA) are first cleared
+        # Using aggregate to maintain state (rex) across the array scan
+        "R1", F.expr("""
+            aggregate(
+                transform(C, (x, i) -> i),
+                CAST(STRUCT(0.0 as rex, 0 as r1_idx) AS STRUCT<rex:DOUBLE, r1_idx:INT>),
+                (acc, i) -> struct(
+                    IF(CAST(C[i] AS DOUBLE) > CURR_DATE, acc.rex - CAST(F[i] AS DOUBLE), acc.rex),
+                    IF(acc.r1_idx == 0 AND (CREDIT_ARREARS + IF(CAST(C[i] AS DOUBLE) > CURR_DATE, acc.rex - CAST(F[i] AS DOUBLE), acc.rex)) <= 0 
+                    AND IF(CAST(C[i] AS DOUBLE) > CURR_DATE, acc.rex - CAST(F[i] AS DOUBLE), acc.rex) != 0, 
+                    i + 1, acc.r1_idx)
+                )
+            ).r1_idx
+        """)
+    )
+
+    # 3. Final Output Logic and Variable Mapping
+    # Replicates the / 15 indexing and column assignments
+    df_final = df_processed.select(
+        "*",
+        F.expr("""
+            CASE 
+                WHEN coalesce(P, 0) == 0 THEN floor(E / 15)
+                ELSE ceil(P / 15)
+            END
+        """).alias("idx_ref")
+    ).select(
+        "*",
+        # START_DATE_X & REPAYMENT_X (based on Z)
+        F.expr("IF(Z IS NULL OR Z == 0, 0, C[int(Z - 1)])").alias("START_DATE_X"),
+        F.expr("IF(Z IS NULL OR Z == 0, 0, F[int(Z - 1)])").alias("REPAYMENT_X"),
+        
+        # Partitioned Data (SD, REP, BAL, RT based on idx_ref)
+        F.expr("IF(idx_ref < 1, SD[0], SD[int(idx_ref - 1)])").alias("START_DATE_01"),
+        F.expr("IF(coalesce(P, 0) == 0, REP_ORIG, REP[int(idx_ref - 1)])").alias("REPAYMENT_01"),
+        F.expr("split(RT[int(IF(idx_ref < 1, 0, idx_ref - 1))], '~')[0]").alias("REPAYMENT_TYPE_01"),
+        F.expr("split(RT[int(IF(idx_ref < 1, 0, idx_ref - 1))], '~')[1]").alias("PRINC_DUE_01"),
+        F.expr("COL[int(IF(idx_ref < 1, 0, idx_ref - 1))]").alias("POST_DATE"),
+        F.expr("IF(coalesce(P, 0) == 0, BAL_ORIG, BAL[int(idx_ref - 1)])").alias("BALANCE_01"),
+        
+        # Financial Date Logic (LAST_PAY_DATE_X & NEXT_DUE_DATE_X)
+        F.expr("IF(coalesce(P, 0) <= 1, 0, C[int(P - 2)])").alias("LAST_PAY_DATE_X"),
+        F.expr("IF(R1 IS NULL OR R1 == 0, 0, C[int(R1 - 1)])").alias("NEXT_DUE_DATE_X"),
+        
+        # Original Q logic
+        F.expr("""
+            IF(E > 400, 27, IF(E > 300, 21, IF(E > 200, 14, IF(E > 100, 7, 1))))
+        """).alias("Q")
+    )
+    Copy_of_Transformer_149_v = df_final
+    print(Copy_of_Transformer_149_v.schema)
+    Copy_of_Transformer_149_DSLink151_v = Copy_of_Transformer_149_v.select(
+        col('B_KEY').cast('string').alias('B_KEY'),
+        expr("""IF(Z = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',C), ',', Z)))""").cast('integer').alias('START_DATE_X'),
+        expr("""IF(Z = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',F), ',', Z)))""").cast('decimal(17,3)').alias('REPAYMENT_X'),
+        expr("""DS_FIELD(CONCAT_WS(',',SD), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('START_DATE_01'),
+        expr("""IF(P = 0, REPAYMENT_01, (DS_FIELD(CONCAT_WS(',',REP), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('REPAYMENT_01'),
+        expr("""IF(DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 1) = '', NULL, DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 1))""").cast('string').alias('REPAYMENT_TYPE_01'),
+        expr("""IF(DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 2) = '', NULL, DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 2))""").cast('decimal(17,3)').alias('PRINC_DUE_01'),
+        col('INSUR_AMT_DUE_01').cast('decimal(17,3)').alias('INSUR_AMT_DUE_01'),
+        expr("""DS_FIELD(CONCAT_WS(',',COL), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('POST_DATE'),
+        expr("""IF(P = 0, BALANCE_01, (DS_FIELD(CONCAT_WS(',',BAL), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('BALANCE_01'),
+        expr("""IF(P = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',C), ',', P - 1)))""").cast('integer').alias('LAST_PAY_DATE_X'),
+        expr("""IF(R1 = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',C), ',', R1)))""").cast('integer').alias('NEXT_DUE_DATE_X'),
+        col('CIV_ACT_COD_DAT').cast('integer').alias('CIV_ACT_COD_DAT'),
+        col('LEGAL_MARKER_FLAG').cast('string').alias('LEGAL_MARKER_FLAG'),
+        col('CIV_ACT_CODE').cast('string').alias('CIV_ACT_CODE'),
+        col('LGL_TAG').cast('string').alias('LGL_TAG'),
+        col('LGL_TAG_DATE').cast('integer').alias('LGL_TAG_DATE'))
+        
+    print(Copy_of_Transformer_149_DSLink151_v.schema)
+
     Copy_of_Transformer_149_DSLink151_v = Copy_of_Transformer_149_DSLink151_v.selectExpr("B_KEY","START_DATE_X","REPAYMENT_X","START_DATE_01","REPAYMENT_01","RTRIM(REPAYMENT_TYPE_01) AS REPAYMENT_TYPE_01","PRINC_DUE_01","INSUR_AMT_DUE_01","POST_DATE","BALANCE_01","LAST_PAY_DATE_X","NEXT_DUE_DATE_X","CIV_ACT_COD_DAT","LEGAL_MARKER_FLAG","RTRIM(CIV_ACT_CODE) AS CIV_ACT_CODE","RTRIM(LGL_TAG) AS LGL_TAG","LGL_TAG_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_X', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_X', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_01', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_TYPE_01', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PRINC_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'INSUR_AMT_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'POST_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BALANCE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'LAST_PAY_DATE_X', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'NEXT_DUE_DATE_X', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_COD_DAT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'LEGAL_MARKER_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'LGL_TAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'LGL_TAG_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
     spark.sql("DROP TABLE IF EXISTS Copy_of_Transformer_149_DSLink151_v").show()

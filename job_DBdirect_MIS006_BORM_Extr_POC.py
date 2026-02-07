@@ -21,6 +21,7 @@ from pyspark import SparkContext
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col,expr,lit
 from pyspark.sql.functions import lit, col, input_file_name
+from pyspark.sql import functions as F
 from pyspark.sql.types import *
 import json
 import logging
@@ -192,12 +193,9 @@ def netz_ODS_DTEP_INSP(spark: SparkSession, sc: SparkContext, **kw_args):
     
             AND A.SYST = B.SYST
     
-            AND A.DTEP_ID = B.DTEP_ID
-    
-        WHERE Next_Month_code <> '0'
-    
+            AND A.DTEP_ID = B.DTEP_ID    
     ) AS X ON X.DATE_YYYYMM = CAST(DATE_FORMAT(DATE_ADD(TO_DATE('1899-12-31'), OCID.TRAN_DATE), 'yyyyMM') AS INT) 
-    
+        AND X.Next_Month_code <> '0'
         AND X.SOC_NO_1 = SUBSTR(BORM.KEY_1, 1, 3)
     
         AND CAST(OCID.CLR_TYPE AS INT) <> CAST(X.CL_TYPE_1 AS INT)""").render(job_params)
@@ -247,14 +245,9 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     #spark.sql(f"use {catalog}.default").show()
     
     
-    
-    sql=Template("""-- For Iceberg tables in Spark SQL
-    
-    DELETE FROM ADMIN.BORM_SUM;
-    
-    
-    
-    INSERT INTO ADMIN.BORM_SUM
+    spark.sql(f"DROP TABLE IF EXISTS ADMIN.BORM_SUM").show()
+
+    sql=Template("""CREATE TABLE ADMIN.BORM_SUM USING PARQUET AS
     
     SELECT 
     
@@ -284,7 +277,7 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
                      AND BORM.LST_ARR_DATE < BOPG.END_DATE 
     
-                     THEN DATEDIFF(BOPG.END_DATE, BOPG.START_DATE) + 1
+                     THEN (BOPG.END_DATE - BOPG.START_DATE) + 1
     
                 WHEN BOPG.ACCT_STAT = '08' 
     
@@ -292,7 +285,7 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
                      AND BORM.LST_ARR_DATE < BOPG.END_DATE 
     
-                     THEN DATEDIFF(BOPG.END_DATE, BORM.LST_ARR_DATE)
+                     THEN (BOPG.END_DATE - BORM.LST_ARR_DATE)
     
             END As Exclud_days
     
@@ -422,7 +415,7 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     BORM.APPR_INDUSTRY_SECT AS MI006_APPR_INDUSTRY_SECT,
     
-    CAST(TRUNCATE(BORM.INTEREST, 3) AS DECIMAL(18, 3)) AS MI006_INTEREST,
+    CAST(ROUND(BORM.INTEREST, 3) AS DECIMAL(18, 3)) AS MI006_INTEREST,
     
     BORM.UNPD_PRIN_BAL AS MI006_UNPD_PRIN_BAL,
     
@@ -522,7 +515,7 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     (BORM.LOAN_BAL - BORM.THEO_LOAN_BAL) AS MI006_AR_AMT,
     
-    TRUNCATE(BORM.ARR_INT_ACCR, 3) AS MI006_ARR_INT_ACCR,
+    ROUND(BORM.ARR_INT_ACCR, 3) AS MI006_ARR_INT_ACCR,
     
     CASE WHEN BORM.ARR_INT_ACCR < 0 THEN '-' ELSE '+' END AS MI006_ARR_INT_ACCR_SIGN,
     
@@ -562,7 +555,7 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
         WHEN BORM.APP_AMT = 0 THEN 0
     
-        ELSE CAST(TRUNCATE((BORM.ADV_VAL / BORM.APP_AMT) * 100, 4) AS DECIMAL(8, 4))
+        ELSE CAST(ROUND((BORM.ADV_VAL / BORM.APP_AMT) * 100, 4) AS DECIMAL(8, 4))
     
     END AS MI006_DISB_PERC,
     
@@ -604,9 +597,9 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
                                     WHEN (BORM.LST_ARR_DATE < BOPG.START_DATE)
     
-                                        AND (DATE '{{dbdir.pBUSINESS_DATE}}' >= DATE_ADD(DATE '1900-01-01', BOPG.START_DATE))
+                                        AND ( '{{dbdir.pBUSINESS_DATE}}' >= DATE_ADD( '1900-01-01', BOPG.START_DATE))
     
-                                        AND (DATE '{{dbdir.pBUSINESS_DATE}}' <= DATE_ADD(DATE '1900-01-01', BOPG.END_DATE))
+                                        AND ( '{{dbdir.pBUSINESS_DATE}}' <= DATE_ADD( '1900-01-01', BOPG.END_DATE))
     
                                         AND (BOIS.POST_IND = 'Y')
     
@@ -616,33 +609,33 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
                                         CASE
     
-                                            WHEN (DATE '{{dbdir.pBUSINESS_DATE}}' < DATE_ADD(DATE '1900-01-01', BOPG.START_DATE))
+                                            WHEN ( '{{dbdir.pBUSINESS_DATE}}' < DATE_ADD( '1900-01-01', BOPG.START_DATE))
     
-                                                OR (DATE '{{dbdir.pBUSINESS_DATE}}' >= DATE_ADD(DATE '1900-01-01', BOPG.END_DATE))
+                                                OR ('{{dbdir.pBUSINESS_DATE}}' >= DATE_ADD('1900-01-01', BOPG.END_DATE))
     
-                                            THEN (DATE '{{dbdir.pBUSINESS_DATE}}' - DATE_ADD(DATE '1900-01-01', BORM.LST_ARR_DATE)) - COALESCE(BORM_08.Exclud_days, 0)
+                                            THEN DATE_DIFF('{{dbdir.pBUSINESS_DATE}}' , DATE_ADD('1900-01-01', BORM.LST_ARR_DATE)) - COALESCE(BORM_08.Exclud_days, 0)
     
                                             WHEN (BORM.LST_ARR_DATE < BOPG.START_DATE)
     
-                                                AND (DATE '{{dbdir.pBUSINESS_DATE}}' >= DATE_ADD(DATE '1900-01-01', BOPG.START_DATE))
+                                                AND ('{{dbdir.pBUSINESS_DATE}}' >= DATE_ADD('1900-01-01', BOPG.START_DATE))
     
-                                                AND (DATE '{{dbdir.pBUSINESS_DATE}}' < DATE_ADD(DATE '1900-01-01', BOPG.END_DATE))
+                                                AND ('{{dbdir.pBUSINESS_DATE}}' < DATE_ADD('1900-01-01', BOPG.END_DATE))
     
                                                 AND (BOIS.POST_IND = 'N')
     
                                             THEN (BOPG.START_DATE - BORM.LST_ARR_DATE) - COALESCE(BORM_08.Exclud_days, 0)
     
-                                            ELSE (DATE '{{dbdir.pBUSINESS_DATE}}' - DATE_ADD(DATE '1900-01-01', BORM.LST_ARR_DATE))
+                                            ELSE DATE_DIFF('{{dbdir.pBUSINESS_DATE}}' , DATE_ADD('1900-01-01', BORM.LST_ARR_DATE))
     
                                         END
     
                                 END
     
-                            ELSE (DATE '{{dbdir.pBUSINESS_DATE}}' - DATE_ADD(DATE '1900-01-01', BORM.LST_ARR_DATE)) - COALESCE(BORM_08.Exclud_days, 0)
+                            ELSE DATE_DIFF('{{dbdir.pBUSINESS_DATE}}' , DATE_ADD('1900-01-01', BORM.LST_ARR_DATE)) - COALESCE(BORM_08.Exclud_days, 0)
     
                         END
     
-                    ELSE (DATE '{{dbdir.pBUSINESS_DATE}}' - DATE_ADD(DATE '1900-01-01', BORM.LST_ARR_DATE))
+                    ELSE DATE_DIFF('{{dbdir.pBUSINESS_DATE}}' , DATE_ADD('1900-01-01', BORM.LST_ARR_DATE))
     
                 END
     
@@ -903,10 +896,37 @@ def Transformer_46(spark: SparkSession, sc: SparkContext, **kw_args):
     
     
     Transformer_46_joi_DTEP_INSP_Part_v=spark.table('Transformer_46_joi_DTEP_INSP_Part_v')
-    
-    Transformer_46_v = Transformer_46_joi_DTEP_INSP_Part_v.withColumn('A', expr("""IF(DC > CLEARING_DAYS_1, (IF(ISNOTNULL(DTEP_CODES), (CONCAT_WS('', DTEP_CODES, NXT_CODES)), 'X')), 'X')""").cast('string').alias('A')).withColumn('B', expr("""IF(LATE_CHQ_FLAG = 'N' OR LATE_CHQ_FLAG = ' ', 'Y', 'N')""").cast('string').alias('B')).withColumn('C', col('CLEARING_DAYS_1').cast('integer').alias('C'))
-    
-    Transformer_46_DSLink48_v = Transformer_46_v.select(col('B_KEY').cast('string').alias('B_KEY'),expr("""RIGHT(CONCAT('00', CASE WHEN DC > CLEARING_DAYS_1 THEN CASE WHEN F = Curr_Date THEN CASE WHEN B = 'Y' THEN C - 1 ELSE C END WHEN F > Curr_Date THEN CASE WHEN B = 'Y' THEN C ELSE C + 1 END WHEN F < Curr_Date THEN CASE WHEN B = 'Y' THEN CASE WHEN DATE_ADD(F, 1) = Curr_Date THEN C - 2 ELSE 0 END ELSE CASE WHEN Z = Curr_Date THEN C - 1 WHEN DATE_ADD(Z, 1) = Curr_Date THEN C - 2 ELSE 0 END END ELSE 0 END ELSE CASE WHEN NOT DC IS NULL THEN FD ELSE 0 END END), 2)""").cast('string').alias('FLOATDAYS'))
+    max_iter = 30
+    Transformer_46_v_0 = Transformer_46_joi_DTEP_INSP_Part_v.withColumn('A', expr("""IF(DC > CLEARING_DAYS_1, (IF(ISNOTNULL(DTEP_CODES), (CONCAT_WS('', DTEP_CODES, NXT_CODES)), 'X')), 'X')""").cast('string').alias('A')).withColumn('B', expr("""IF(LATE_CHQ_FLAG = 'N' OR LATE_CHQ_FLAG = ' ', 'Y', 'N')""").cast('string').alias('B')).withColumn('C', lit('CLEARING_DAYS_1').cast('integer').alias('C')).withColumn('Curr_Date', expr("""DATE_DIFF('2025-08-28','1900-01-01')""").cast('int').alias('Curr_Date'))
+
+    df_loop = Transformer_46_v_0.withColumn("iterations", F.sequence(F.lit(0), F.lit(max_iter)))
+    # Variable D: Extracting the 2-digit code for every possible iteration
+    df_loop = df_loop.withColumn("D", 
+        F.expr(f"transform(iterations, i -> IF(A = 'X', '0', substring(A, cast((DT + i) * 2 + 1 as int), 2)))")
+    )
+
+    # Variable N: Identifying indices where D is '01' or '05'
+    # In DataStage, N increments. In Spark, we find the positions of these matches.
+    df_loop = df_loop.withColumn("N", 
+        F.expr("filter(iterations, i -> D[i] IN ('01', '05'))")
+    )
+
+    # --- Final Loop Variables (F, Z, X) ---
+    # F: Date when N=1 (first match)
+    # Z: Date when N=2 (second match)
+    # X: Final value of N (the count of matches)
+    df_final = df_loop.withColumn("F", 
+        F.when(F.col("A") != "X", F.expr("TRAN_DATE + N[0]"))
+        .otherwise(F.lit(0))
+    ).withColumn("Z", 
+        F.when(F.col("A") != "X", F.expr("TRAN_DATE + N[1]"))
+        .otherwise(F.lit(0))
+    ).withColumn("X", F.size(F.col("N")))
+
+    # Optional: Cleanup internal arrays to keep it clean like a Transformer output
+    Transformer_46_v = df_final.drop("iterations", "D", "N")
+
+    Transformer_46_DSLink48_v = Transformer_46_v.select(col('B_KEY').cast('string').alias('B_KEY'),expr("""RIGHT(CONCAT('00', CASE WHEN DC > CLEARING_DAYS_1 THEN CASE WHEN F = Curr_Date THEN CASE WHEN B = 'Y' THEN C - 1 ELSE C END WHEN F > Curr_Date THEN CASE WHEN B = 'Y' THEN C ELSE C + 1 END WHEN F < Curr_Date THEN CASE WHEN B = 'Y' THEN CASE WHEN (F + 1) = Curr_Date THEN C - 2 ELSE 0 END ELSE CASE WHEN Z = Curr_Date THEN C - 1 WHEN (Z + 1) = Curr_Date THEN C - 2 ELSE 0 END END ELSE 0 END ELSE CASE WHEN NOT DC IS NULL THEN FD ELSE 0 END END), 2)""").cast('string').alias('FLOATDAYS'))
     
     Transformer_46_DSLink48_v = Transformer_46_DSLink48_v.selectExpr("B_KEY","RTRIM(FLOATDAYS) AS FLOATDAYS").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'FLOATDAYS', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}]}))
     

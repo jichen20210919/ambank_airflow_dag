@@ -22,6 +22,8 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col,expr,lit
 from pyspark.sql.functions import lit, col, input_file_name
 from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import Window
 import json
 import logging
 import pendulum
@@ -797,10 +799,51 @@ def Transformer_J(spark: SparkSession, sc: SparkContext, **kw_args):
     
     
     Transformer_J_lnk_Source_Part_v=spark.table('Transformer_J_lnk_Source_Part_v')
+    # 1. Define the Window (Equivalent to the Sort/Partition in DS)
+    # DataStage sorted by B_KEY and REC_NO
+    window_spec = Window.partitionBy("B_KEY").orderBy("REC_NO")
+    window_unbounded = window_spec.rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+
+    # 2. Stage Variable Logic: Aggregate columns into arrays (Replacing the comma-string accumulation)
+    df_transformed = Transformer_J_lnk_Source_Part_v.withColumn("DUDE", F.collect_list("DUEC").over(window_unbounded)) \
+                    .withColumn("DUET", F.collect_list("DUET").over(window_unbounded))
+
+    # 3. Calculate DC (Dcount equivalent)
+    df_transformed = df_transformed.withColumn("DC", F.size(F.col("DUDE"))).withColumn(
+    "FC",
+    F.when(
+        F.col("DC").cast("int").isNotNull(),
+        # Count elements in DUDE_arr that are exactly '0'
+        F.col("DC") - F.size(F.filter(F.col("DUDE"), lambda x: x == '0'))
+    ).otherwise(F.lit(-99)))
+
+    # 4. Looping Logic / Total Calculation
+    # In DS, the loop calculates a running total based on a flag 'T'.
+    # We can use a Python UDF or Spark's aggregate function for complex array logic.
+
+    # This logic mimics the @ITERATION loop:
+    # If Field(DUDE, i) == '0' -> C = 0, else C = DUET[i]
+    # If C == 0 -> T = 0, else T (persists)
+    # Total = Running sum of C as long as T isn't 0
+
+    expr_total = """
+    aggregate(
+        zip_with(DUDE, DUET, (de, dt) -> struct(de as duec, dt as duet)),
+        cast(struct(0.0 as total, 1 as t_flag) as struct<total:double, t_flag:int>),
+        (acc, x) -> 
+            case 
+                when acc.t_flag = 0 then acc
+                when x.duec = '0' then struct(acc.total as total, 0 as t_flag)
+                else struct(acc.total + cast(x.duet as double) as total, 1 as t_flag)
+            end,
+        acc -> acc.total
+    )
+    """
+
+    final_df = df_transformed.withColumn("Total", F.expr(expr_total)) \
+                            .withColumn("ROW_INDEX__",F.row_number().over(window_spec.orderBy(F.desc("REC_NO"))))    
     
-    Transformer_J_v = Transformer_J_lnk_Source_Part_v.withColumn('DUDE', expr("""IF(LAST, DUEC, CONCAT_WS('', CONCAT_WS('', DUDE, ','), DUEC))""").cast('string').alias('DUDE')).withColumn('DUET', expr("""IF(LAST, DUET, CONCAT_WS('', CONCAT_WS('', DUET, ','), DUET))""").cast('string').alias('DUET')).withColumn('DC', expr("""CASE WHEN NOT DUDE IS NULL THEN SIZE(SPLIT(DUDE, ',')) ELSE 'Y' END AS result""").cast('string').alias('DC')).withColumn('FC', expr("""CASE WHEN NOT CAST(DC AS INT) IS NULL AND DC RLIKE '^-?[0-9]+$' THEN CASE WHEN (CAST(DC AS DECIMAL) - LENGTH(CONCAT(',', DUDE, ',')) + LENGTH(REPLACE(CONCAT(',', DUDE, ','), ',0,', ''))) / LENGTH(',0,') = 0 THEN 0 ELSE CAST(DC AS DECIMAL) - (LENGTH(CONCAT(',', DUDE, ',')) - LENGTH(REPLACE(CONCAT(',', DUDE, ','), ',0,', ''))) / LENGTH(',0,') END ELSE -99 END AS result""").cast('integer').alias('FC')).withColumn('LAST', expr("""CASE WHEN LEAD(B_KEY) OVER (PARTITION BY B_KEY ORDER BY B_KEY ASC NULLS LAST) IS NULL THEN TRUE ELSE FALSE END""").cast('integer').alias('LAST'))
-    
-    Transformer_J_Remove_Dupe_v = Transformer_J_v.select(col('B_KEY').cast('string').alias('B_KEY'),col('MI006_ARRS_INT_1').cast('decimal(18,3)').alias('MI006_ARRS_INT_1'),col('MI006_BRTH_EFF_DATE').cast('integer').alias('MI006_BRTH_EFF_DATE'),col('MI006_REASON_CD').cast('integer').alias('MI006_REASON_CD'),col('DUEC').cast('string').alias('DUEC'),col('DUET').cast('string').alias('DUET'),col('MI006_BORM_RM_CODE').cast('string').alias('MI006_BORM_RM_CODE'),col('MI006_BORH_REBATE_PERC').cast('string').alias('MI006_BORH_REBATE_PERC'),col('MI006_BORM_ARR_INT_INCR').cast('decimal(18,5)').alias('MI006_BORM_ARR_INT_INCR'),expr("""IF(FC = -99, NULL, FC)""").cast('integer').alias('MI006_NO_OF_DUES_BOAF'),col('Total').cast('decimal(18,3)').alias('MI006_BILLED_AMT_UNPD_BOAF'))
+    Transformer_J_Remove_Dupe_v = final_df.filter("ROW_INDEX__ = 1").select(col('B_KEY').cast('string').alias('B_KEY'),col('MI006_ARRS_INT_1').cast('decimal(18,3)').alias('MI006_ARRS_INT_1'),col('MI006_BRTH_EFF_DATE').cast('integer').alias('MI006_BRTH_EFF_DATE'),col('MI006_REASON_CD').cast('integer').alias('MI006_REASON_CD'),col('DUEC').cast('string').alias('DUEC'),col('DUET').cast('string').alias('DUET'),col('MI006_BORM_RM_CODE').cast('string').alias('MI006_BORM_RM_CODE'),col('MI006_BORH_REBATE_PERC').cast('string').alias('MI006_BORH_REBATE_PERC'),col('MI006_BORM_ARR_INT_INCR').cast('decimal(18,5)').alias('MI006_BORM_ARR_INT_INCR'),expr("""IF(FC = -99, NULL, FC)""").cast('integer').alias('MI006_NO_OF_DUES_BOAF'),col('Total').cast('decimal(18,3)').alias('MI006_BILLED_AMT_UNPD_BOAF'))
     
     Transformer_J_Remove_Dupe_v = Transformer_J_Remove_Dupe_v.selectExpr("B_KEY","MI006_ARRS_INT_1","MI006_BRTH_EFF_DATE","MI006_REASON_CD","DUEC","DUET","MI006_BORM_RM_CODE","RTRIM(MI006_BORH_REBATE_PERC) AS MI006_BORH_REBATE_PERC","MI006_BORM_ARR_INT_INCR","MI006_NO_OF_DUES_BOAF","MI006_BILLED_AMT_UNPD_BOAF").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ARRS_INT_1', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BRTH_EFF_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REASON_CD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'DUEC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'DUET', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_RM_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORH_REBATE_PERC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BORM_ARR_INT_INCR', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DUES_BOAF', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BILLED_AMT_UNPD_BOAF', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}]}))
     
@@ -860,9 +903,14 @@ def Join_18(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Join_18_Zect_Part_v=spark.table('Join_18_Zect_Part_v')
     
+    print(Join_18_Colt_Part_v.schema)
+    print(Join_18_Colm_Part_v.schema)
+    print(Join_18_Remove_Dupe_Part_v.schema)
+    print(Join_18_Zect_Part_v.schema)
+
     Join_18_v=Join_18_Colt_Part_v.join(Join_18_Colm_Part_v,['B_KEY'],'inner').join(Join_18_Remove_Dupe_Part_v,['B_KEY'],'inner').join(Join_18_Zect_Part_v,['B_KEY'],'inner')
     
-    Join_18_DSLink22_v = Join_18_v.select(Join_18_Colt_Part_v.B_KEY.cast('string').alias('B_KEY'),Join_18_Remove_Dupe_Part_v.MI006_ARRS_INT_1.cast('decimal(18,3)').alias('MI006_ARRS_INT_1'),Join_18_Remove_Dupe_Part_v.MI006_BRTH_EFF_DATE.cast('integer').alias('MI006_BRTH_EFF_DATE'),Join_18_Remove_Dupe_Part_v.MI006_REASON_CD.cast('integer').alias('MI006_REASON_CD'),Join_18_Remove_Dupe_Part_v.DUEC.cast('string').alias('DUEC'),Join_18_Remove_Dupe_Part_v.DUET.cast('string').alias('DUET'),Join_18_Remove_Dupe_Part_v.MI006_BORM_RM_CODE.cast('string').alias('MI006_BORM_RM_CODE'),Join_18_Remove_Dupe_Part_v.MI006_BORH_REBATE_PERC.cast('string').alias('MI006_BORH_REBATE_PERC'),Join_18_Remove_Dupe_Part_v.MI006_BORM_ARR_INT_INCR.cast('decimal(18,5)').alias('MI006_BORM_ARR_INT_INCR'),Join_18_Colt_Part_v.MI006_NO_OF_DISB_ON_NOTE.cast('string').alias('MI006_NO_OF_DISB_ON_NOTE'),Join_18_Colm_Part_v.MI006_DESCRIPTION.cast('string').alias('MI006_DESCRIPTION'),Join_18_Colm_Part_v.MI006_CLASSIFIED_DATE.cast('integer').alias('MI006_CLASSIFIED_DATE'),Join_18_Colm_Part_v.MI006_GUA_CUSTO_NO.cast('string').alias('MI006_GUA_CUSTO_NO'),Join_18_Colm_Part_v.MI006_AMORT_FLAG.cast('string').alias('MI006_AMORT_FLAG'),Join_18_Colm_Part_v.MI006_ZECT_HANDLING_FEE.cast('decimal(18,5)').alias('MI006_ZECT_HANDLING_FEE'),Join_18_Zect_Part_v.MI006_ZECT_OTHER_FEE_sum.cast('decimal(18,5)').alias('MI006_ZECT_OTHER_FEE'),Join_18_Colm_Part_v.MI006_ZECT_EXP_HANDLING_AMT.cast('decimal(18,3)').alias('MI006_ZECT_EXP_HANDLING_AMT'),Join_18_Remove_Dupe_Part_v.MI006_NO_OF_DUES_BOAF.cast('integer').alias('MI006_NO_OF_DUES_BOAF'),Join_18_Remove_Dupe_Part_v.MI006_BILLED_AMT_UNPD_BOAF.cast('decimal(18,3)').alias('MI006_BILLED_AMT_UNPD_BOAF'),Join_18_Colm_Part_v.MI006_RIGH_NPL_COUNTER.cast('string').alias('MI006_RIGH_NPL_COUNTER'),Join_18_Colm_Part_v.MI006_RIGH_PL_DATE.cast('integer').alias('MI006_RIGH_PL_DATE'),Join_18_Colm_Part_v.MI006_ZECT_INPUTTAXNC1.cast('decimal(18,5)').alias('MI006_ZECT_INPUTTAXNC1'))
+    Join_18_DSLink22_v = Join_18_v.select(Join_18_Colt_Part_v["B_KEY"].cast('string').alias('B_KEY'),Join_18_Remove_Dupe_Part_v.MI006_ARRS_INT_1.cast('decimal(18,3)').alias('MI006_ARRS_INT_1'),Join_18_Remove_Dupe_Part_v.MI006_BRTH_EFF_DATE.cast('integer').alias('MI006_BRTH_EFF_DATE'),Join_18_Remove_Dupe_Part_v.MI006_REASON_CD.cast('integer').alias('MI006_REASON_CD'),Join_18_Remove_Dupe_Part_v.DUEC.cast('string').alias('DUEC'),Join_18_Remove_Dupe_Part_v.DUET.cast('string').alias('DUET'),Join_18_Remove_Dupe_Part_v.MI006_BORM_RM_CODE.cast('string').alias('MI006_BORM_RM_CODE'),Join_18_Remove_Dupe_Part_v.MI006_BORH_REBATE_PERC.cast('string').alias('MI006_BORH_REBATE_PERC'),Join_18_Remove_Dupe_Part_v.MI006_BORM_ARR_INT_INCR.cast('decimal(18,5)').alias('MI006_BORM_ARR_INT_INCR'),Join_18_Colt_Part_v["MI006_NO_OF_DISB_ON_NOTE"].cast('string').alias('MI006_NO_OF_DISB_ON_NOTE'),Join_18_Colm_Part_v.MI006_DESCRIPTION.cast('string').alias('MI006_DESCRIPTION'),Join_18_Colm_Part_v.MI006_CLASSIFIED_DATE.cast('integer').alias('MI006_CLASSIFIED_DATE'),Join_18_Colm_Part_v.MI006_GUA_CUSTO_NO.cast('string').alias('MI006_GUA_CUSTO_NO'),Join_18_Colm_Part_v.MI006_AMORT_FLAG.cast('string').alias('MI006_AMORT_FLAG'),Join_18_Colm_Part_v.MI006_ZECT_HANDLING_FEE.cast('decimal(18,5)').alias('MI006_ZECT_HANDLING_FEE'),Join_18_Zect_Part_v.MI006_ZECT_OTHER_FEE_sum.cast('decimal(18,5)').alias('MI006_ZECT_OTHER_FEE'),Join_18_Colm_Part_v.MI006_ZECT_EXP_HANDLING_AMT.cast('decimal(18,3)').alias('MI006_ZECT_EXP_HANDLING_AMT'),Join_18_Remove_Dupe_Part_v.MI006_NO_OF_DUES_BOAF.cast('integer').alias('MI006_NO_OF_DUES_BOAF'),Join_18_Remove_Dupe_Part_v.MI006_BILLED_AMT_UNPD_BOAF.cast('decimal(18,3)').alias('MI006_BILLED_AMT_UNPD_BOAF'),Join_18_Colm_Part_v.MI006_RIGH_NPL_COUNTER.cast('string').alias('MI006_RIGH_NPL_COUNTER'),Join_18_Colm_Part_v.MI006_RIGH_PL_DATE.cast('integer').alias('MI006_RIGH_PL_DATE'),Join_18_Colm_Part_v.MI006_ZECT_INPUTTAXNC1.cast('decimal(18,5)').alias('MI006_ZECT_INPUTTAXNC1'))
     
     Join_18_DSLink22_v = Join_18_DSLink22_v.selectExpr("B_KEY","MI006_ARRS_INT_1","MI006_BRTH_EFF_DATE","MI006_REASON_CD","DUEC","DUET","MI006_BORM_RM_CODE","RTRIM(MI006_BORH_REBATE_PERC) AS MI006_BORH_REBATE_PERC","MI006_BORM_ARR_INT_INCR","RTRIM(MI006_NO_OF_DISB_ON_NOTE) AS MI006_NO_OF_DISB_ON_NOTE","MI006_DESCRIPTION","MI006_CLASSIFIED_DATE","MI006_GUA_CUSTO_NO","RTRIM(MI006_AMORT_FLAG) AS MI006_AMORT_FLAG","MI006_ZECT_HANDLING_FEE","MI006_ZECT_OTHER_FEE","MI006_ZECT_EXP_HANDLING_AMT","MI006_NO_OF_DUES_BOAF","MI006_BILLED_AMT_UNPD_BOAF","MI006_RIGH_NPL_COUNTER","MI006_RIGH_PL_DATE","MI006_ZECT_INPUTTAXNC1").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ARRS_INT_1', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BRTH_EFF_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REASON_CD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'DUEC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'DUET', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_RM_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORH_REBATE_PERC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BORM_ARR_INT_INCR', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DISB_ON_NOTE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_DESCRIPTION', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CLASSIFIED_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_GUA_CUSTO_NO', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_AMORT_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_ZECT_HANDLING_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_OTHER_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_EXP_HANDLING_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DUES_BOAF', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BILLED_AMT_UNPD_BOAF', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_NPL_COUNTER', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_PL_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_INPUTTAXNC1', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}]}))
     

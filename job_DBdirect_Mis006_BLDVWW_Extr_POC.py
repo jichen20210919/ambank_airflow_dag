@@ -21,6 +21,9 @@ from pyspark import SparkContext
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col,expr,lit
 from pyspark.sql.functions import lit, col, input_file_name
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+
 from pyspark.sql.types import *
 import json
 import logging
@@ -183,10 +186,17 @@ def Sort_56(spark: SparkSession, sc: SparkContext, **kw_args):
     Sort_56_lnk_Source__Part_v=spark.table('Sort_56_lnk_Source__Part_v')
     
     Sort_56_v = Sort_56_lnk_Source__Part_v
-    
+    print(Sort_56_v.schema)
     Sort_56_lnk_Source_v_0 = Sort_56_v.orderBy(col('BORM_KEY_1').asc())
-    
-    Sort_56_lnk_Source_v = Sort_56_lnk_Source_v_0.select(col('BORM_KEY_1').cast('string').alias('BORM_KEY_1'),col('MEMB_NO').cast('string').alias('MEMB_NO'),col('CAFM_HIGH_RTE').cast('decimal(7,4)').alias('CAFM_HIGH_RTE'),col('CAFM_START_RTE_DTE').cast('integer').alias('CAFM_START_RTE_DTE'),col('CAFM_RESET_RTE_DTE').cast('integer').alias('CAFM_RESET_RTE_DTE'),col('CAFM_TYPE').cast('string').alias('CAFM_TYPE'),col('REPAY_FREQ').cast('string').alias('REPAY_FREQ'),expr("""*""").cast('integer').alias('keyChange'))
+    window_spec = Window.orderBy("BORM_KEY_1")
+    df = Sort_56_lnk_Source_v_0.withColumn("_PREV_BORM_KEY_1", F.lag("BORM_KEY_1").over(window_spec))
+    print(df.schema)
+    # KeyChange() logic: 1 if changed (or first row), 0 if same
+    df = df.withColumn("KeyChange", 
+        F.when(F.col("_PREV_BORM_KEY_1").isNull() | (F.col("_PREV_BORM_KEY_1") != F.col("BORM_KEY_1")), 1)
+        .otherwise(0)
+    )
+    Sort_56_lnk_Source_v = df.select(col('BORM_KEY_1').cast('string').alias('BORM_KEY_1'),col('MEMB_NO').cast('string').alias('MEMB_NO'),col('CAFM_HIGH_RTE').cast('decimal(7,4)').alias('CAFM_HIGH_RTE'),col('CAFM_START_RTE_DTE').cast('integer').alias('CAFM_START_RTE_DTE'),col('CAFM_RESET_RTE_DTE').cast('integer').alias('CAFM_RESET_RTE_DTE'),col('CAFM_TYPE').cast('string').alias('CAFM_TYPE'),col('REPAY_FREQ').cast('string').alias('REPAY_FREQ'),expr("""KeyChange""").cast('integer').alias('keyChange'))
     
     Sort_56_lnk_Source_v = Sort_56_lnk_Source_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","RTRIM(MEMB_NO) AS MEMB_NO","CAFM_HIGH_RTE","CAFM_START_RTE_DTE","CAFM_RESET_RTE_DTE","RTRIM(CAFM_TYPE) AS CAFM_TYPE","RTRIM(REPAY_FREQ) AS REPAY_FREQ","keyChange").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MEMB_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'CAFM_HIGH_RTE', 'type': 'decimal(7,4)', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_START_RTE_DTE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_RESET_RTE_DTE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'REPAY_FREQ', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'keyChange', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     

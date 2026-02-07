@@ -22,6 +22,8 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col,expr,lit
 from pyspark.sql.functions import lit, col, input_file_name
 from pyspark.sql.types import *
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
 import json
 import logging
 import pendulum
@@ -338,7 +340,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     CASE WHEN (BORM.BASE_ID != '' AND BORM.RATE_ID != '') THEN BORM.RATE_ID ELSE LONP.BASM_RATE_ID END AS E_RATE_ID,
     
-    CAST(TRUNC(COALESCE(BOIS.YTD_ACCR, 0) + COALESCE(BORM.INT_ACCR, 0), 3) AS DECIMAL(18, 3)) AS MI006_ACCR_INCEPT,
+    CAST(ROUND(COALESCE(BOIS.YTD_ACCR, 0) + COALESCE(BORM.INT_ACCR, 0), 3) AS DECIMAL(18, 3)) AS MI006_ACCR_INCEPT,
     
     CAST(ABS((COALESCE(BORM.LOAN_TRM, 0) - COALESCE(BORM.REM_REPAYS, 0) - COALESCE(CAST(BOIS.MIA AS INT), 0))) AS STRING) AS MI006_NO_INST_PAID,
     
@@ -636,7 +638,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
                     ), 
     
-                    BORM.LOAN_TRM
+                    CAST(BORM.LOAN_TRM AS INT)
     
                 ), 
     
@@ -670,7 +672,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
                     ), 
     
-                    BORM.LOAN_TRM
+                    CAST(BORM.LOAN_TRM AS INT)
     
                 ), 
     
@@ -920,7 +922,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
         WHEN BOIS.STOP_ACCRUAL = 'N' THEN 
     
-            CAST(DATE_FORMAT(DATE_ADD(TO_DATE('1899-12-31'), {{Curr_Date}} + 1), 'yyyyMMdd') AS INT)
+            CAST(DATE_FORMAT(DATE_ADD(TO_DATE('1899-12-31'), DATE_DIFF({{Curr_Date}},'1900-01-01') + 1), 'yyyyMMdd') AS INT)
     
         ELSE 0 
     
@@ -1120,11 +1122,11 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     BOIS.EIY_RATE               --ODS SPECT 23.0
     
-    FROM BORM
+    FROM {{dbdir.pODS_SCHM}}.BORM
     
-    LEFT JOIN BOIS ON BOIS.KEY_1 = BORM.KEY_1
+    LEFT JOIN {{dbdir.pODS_SCHM}}.BOIS ON BOIS.KEY_1 = BORM.KEY_1
     
-    LEFT JOIN LONP ON LONP.INST_NO = SUBSTRING(BORM.KEY_1, 1, 3) 
+    LEFT JOIN {{dbdir.pODS_SCHM}}.LONP ON LONP.INST_NO = SUBSTRING(BORM.KEY_1, 1, 3) 
     
         AND LONP.SYST = 'BOR' 
     
@@ -1150,7 +1152,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
                 BLDVNN.START_DATE_01
     
-            FROM BLDVNN
+            FROM {{dbdir.pODS_SCHM}}.BLDVNN
     
         ) B
     
@@ -1158,7 +1160,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     ) BLDVNN ON BLDVNN.BL_KEY = BORM.KEY_1
     
-    LEFT JOIN CHCD ON CHCD.INST_NO = SUBSTRING(BORM.KEY_1, 1, 3)  
+    LEFT JOIN {{dbdir.pODS_SCHM}}.CHCD ON CHCD.INST_NO = SUBSTRING(BORM.KEY_1, 1, 3)  
     
         AND CHCD.BRANCH_NO = BOIS.ORIGIN_BRANCH 
     
@@ -1166,7 +1168,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
         AND CHCD.INT_CAT = BORM.CAT
     
-    LEFT JOIN IFRM ON SUBSTRING(BORM.KEY_1, 1, 3) = IFRM.INST_NO
+    LEFT JOIN {{dbdir.pODS_SCHM}}.IFRM ON SUBSTRING(BORM.KEY_1, 1, 3) = IFRM.INST_NO
     
         AND SUBSTRING(BORM.KEY_1, 4, 16) = IFRM.ACCT_NO""").render(job_params)
     
@@ -1388,9 +1390,18 @@ def srt_KeyChange(spark: SparkSession, sc: SparkContext, **kw_args):
     
     srt_KeyChange_v = srt_KeyChange_srt_KeyChange_Part_v
     
-    srt_KeyChange_fil_KeyChange_v_0 = srt_KeyChange_v.orderBy(col('SOC_NO').asc(),col('BASE_ID').asc(),col('RATE_ID').asc())
-    
-    srt_KeyChange_fil_KeyChange_v = srt_KeyChange_fil_KeyChange_v_0.select(col('SOC_NO').cast('string').alias('SOC_NO'),col('BASE_ID').cast('string').alias('BASE_ID'),col('RATE_ID').cast('string').alias('RATE_ID'),col('BASM_DATE').cast('integer').alias('BASM_DATE'),col('BASM_TIME').cast('integer').alias('BASM_TIME'),col('RATE').cast('decimal(16,3)').alias('RATE'),col('KEY_POINTER').cast('string').alias('KEY_POINTER'),col('EFF_RATE').cast('decimal(16,4)').alias('EFF_RATE'),col('INST_NO').cast('string').alias('INST_NO'),col('L_BASM_BASE_ID').cast('string').alias('L_BASM_BASE_ID'),col('L_BASM_RATE_ID').cast('string').alias('L_BASM_RATE_ID'),col('MI006_BASM_BASE_ID').cast('string').alias('MI006_BASM_BASE_ID'),col('MI006_PRIME_RATE').cast('decimal(9,5)').alias('MI006_PRIME_RATE'),col('MI006_BASM_DESCRIPTION').cast('string').alias('MI006_BASM_DESCRIPTION'),expr("""*""").cast('integer').alias('keyChange'))
+    window_spec = Window.orderBy("SOC_NO","BASE_ID","RATE_ID")
+    columns_to_hash = ["SOC_NO","BASE_ID","RATE_ID"]
+    srt_KeyChange_fil_KeyChange_v_0 = srt_KeyChange_v.orderBy(col('SOC_NO').asc(),col('BASE_ID').asc(),col('RATE_ID').asc()).withColumn("KEY_HASH", F.hash(*columns_to_hash))
+    df = srt_KeyChange_fil_KeyChange_v_0.withColumn("_PREV_KEY_HASH", F.lag("SOC_NO").over(window_spec))
+
+    print(df.schema)
+    # KeyChange() logic: 1 if changed (or first row), 0 if same
+    df = df.withColumn("KeyChange", 
+        F.when(F.col("_PREV_KEY_HASH").isNull() | (F.col("_PREV_KEY_HASH") != F.col("KEY_HASH")), 1)
+        .otherwise(0)
+    )
+    srt_KeyChange_fil_KeyChange_v = df.select(col('SOC_NO').cast('string').alias('SOC_NO'),col('BASE_ID').cast('string').alias('BASE_ID'),col('RATE_ID').cast('string').alias('RATE_ID'),col('BASM_DATE').cast('integer').alias('BASM_DATE'),col('BASM_TIME').cast('integer').alias('BASM_TIME'),col('RATE').cast('decimal(16,3)').alias('RATE'),col('KEY_POINTER').cast('string').alias('KEY_POINTER'),col('EFF_RATE').cast('decimal(16,4)').alias('EFF_RATE'),col('INST_NO').cast('string').alias('INST_NO'),col('L_BASM_BASE_ID').cast('string').alias('L_BASM_BASE_ID'),col('L_BASM_RATE_ID').cast('string').alias('L_BASM_RATE_ID'),col('MI006_BASM_BASE_ID').cast('string').alias('MI006_BASM_BASE_ID'),col('MI006_PRIME_RATE').cast('decimal(9,5)').alias('MI006_PRIME_RATE'),col('MI006_BASM_DESCRIPTION').cast('string').alias('MI006_BASM_DESCRIPTION'),expr("""KeyChange""").cast('integer').alias('keyChange'))
     
     srt_KeyChange_fil_KeyChange_v = srt_KeyChange_fil_KeyChange_v.selectExpr("RTRIM(SOC_NO) AS SOC_NO","RTRIM(BASE_ID) AS BASE_ID","RTRIM(RATE_ID) AS RATE_ID","BASM_DATE","BASM_TIME","RATE","RTRIM(KEY_POINTER) AS KEY_POINTER","EFF_RATE","RTRIM(INST_NO) AS INST_NO","RTRIM(L_BASM_BASE_ID) AS L_BASM_BASE_ID","RTRIM(L_BASM_RATE_ID) AS L_BASM_RATE_ID","MI006_BASM_BASE_ID","MI006_PRIME_RATE","MI006_BASM_DESCRIPTION","keyChange").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'SOC_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'BASE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'RATE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'BASM_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BASM_TIME', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'RATE', 'type': 'decimal(16,3)', 'nullable': True, 'metadata': {}}, {'name': 'KEY_POINTER', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'EFF_RATE', 'type': 'decimal(16,4)', 'nullable': True, 'metadata': {}}, {'name': 'INST_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'L_BASM_BASE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'L_BASM_RATE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'MI006_BASM_BASE_ID', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_PRIME_RATE', 'type': 'decimal(9,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BASM_DESCRIPTION', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'keyChange', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     

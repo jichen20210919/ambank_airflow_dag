@@ -22,6 +22,8 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col,expr,lit
 from pyspark.sql.functions import lit, col, input_file_name
 from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 import json
 import logging
 import pendulum
@@ -545,9 +547,9 @@ def NETZ_SRC_TBL_NM2(spark: SparkSession, sc: SparkContext, **kw_args):
     
                                             CASE 
     
-                                                WHEN LEAD(PITA.START_DATE, 1) OVER (PARTITION BY MI006_MEMB_CUST_AC ORDER BY PITA.REC_NO) < {{Curr_Date}} THEN 
+                                                WHEN LEAD(PITA.START_DATE, 1) OVER (PARTITION BY SUBSTRING(BORM.KEY_1, 4, 16) ORDER BY PITA.REC_NO) < {{Curr_Date}} THEN 
     
-                                                    LEAD(PITA.START_DATE, 1) OVER (PARTITION BY MI006_MEMB_CUST_AC ORDER BY PITA.REC_NO)
+                                                    LEAD(PITA.START_DATE, 1) OVER (PARTITION BY SUBSTRING(BORM.KEY_1, 4, 16) ORDER BY PITA.REC_NO)
     
                                                 ELSE ({{Curr_Date}} + 14)
     
@@ -625,7 +627,7 @@ def NETZ_SRC_TBL_NM2(spark: SparkSession, sc: SparkContext, **kw_args):
     
             
     
-            CAST(ROW_NUMBER() OVER (PARTITION BY MI006_MEMB_CUST_AC ORDER BY MI006_MEMB_CUST_AC, PITA.REC_NO) AS INT) AS SEQ
+            CAST(ROW_NUMBER() OVER (PARTITION BY SUBSTRING(BORM.KEY_1, 4, 16) ORDER BY SUBSTRING(BORM.KEY_1, 4, 16), PITA.REC_NO) AS INT) AS SEQ
     
             
     
@@ -659,7 +661,7 @@ def NETZ_SRC_TBL_NM2(spark: SparkSession, sc: SparkContext, **kw_args):
     
     ) Der
     
-    -- WHERE MI006_MEMB_CUST_AC IN ('0250100045329', '250200067386', '340100163819')""").render(job_params)
+    -- WHERE SUBSTRING(BORM.KEY_1, 4, 16) IN ('0250100045329', '250200067386', '340100163819')""").render(job_params)
     
     log.info(f"execute sql query {sql}")
     
@@ -739,11 +741,11 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
             BORM.KEY_1 AS BORM_KEY_1,
     
-            CAST(ROW_NUMBER() OVER (PARTITION BY MI006_MEMB_CUST_AC ORDER BY MI006_MEMB_CUST_AC, PITA.REC_NO) AS INT) AS SEQ,
+            CAST(ROW_NUMBER() OVER (PARTITION BY SUBSTR(BORM.KEY_1, 4, 16) ORDER BY SUBSTR(BORM.KEY_1, 4, 16), PITA.REC_NO) AS INT) AS SEQ,
     
             PITA.START_DATE,
     
-            LAG(PITA.START_DATE, 1) OVER (PARTITION BY MI006_MEMB_CUST_AC ORDER BY PITA.REC_NO) AS Prev_START_DATE,
+            LAG(PITA.START_DATE, 1) OVER (PARTITION BY SUBSTR(BORM.KEY_1, 4, 16) ORDER BY PITA.REC_NO) AS Prev_START_DATE,
     
             BORM.ADV_DATE,
     
@@ -954,12 +956,39 @@ def Transformer_84(spark: SparkSession, sc: SparkContext, **kw_args):
     
     
     Transformer_84_ln_Nxt_Lst_Part_v=spark.table('Transformer_84_ln_Nxt_Lst_Part_v')
+    # 1. Define the Window partitioned by the key
+    # We need an ordering column to ensure "LastRow" is deterministic. 
+    # If your DS job had no specific sort within the key, we assume natural order.
+    window_spec = Window.partitionBy("BORM_KEY_1").orderBy(F.monotonically_increasing_id())
+
+    # 2. Replicating the "LastRowInGroup" logic
+    # In PySpark, instead of iterating and holding state, we can use 
+    # F.last() with the window to get the final values for the group.
+    df_transformed = Transformer_84_ln_Nxt_Lst_Part_v.withColumn(
+        "is_last_in_group", 
+        F.row_number().over(Window.partitionBy("BORM_KEY_1").orderBy(F.desc(F.monotonically_increasing_id()))) == 1
+    )
+
+    # 3. Handling Stage Variables A and B
+    # The DS logic essentially propagates the first non-null date found in the group 
+    # or maintains 'X' and then outputs the result at the end of the group.
+    # Based on the DS Spec, it looks like it's trying to capture specific date values 
+    # within the group.
+
+    joi_LONP = df_transformed.withColumn("A_val", F.coalesce(F.col("MI006_NEXT_REPRICE_DATE").cast("string"), F.lit("X"))).withColumn("B_val", F.coalesce(F.col("MI006_LAST_REPRICE_DATE").cast("string"), F.lit("X"))).withColumn("FINAL_A", F.last("A_val").over(window_spec)).withColumn("FINAL_B", F.last("B_val").over(window_spec)).withColumn("_row_idx", F.row_number().over(Window.partitionBy("BORM_KEY_1").orderBy(F.desc(F.monotonically_increasing_id())))).filter(F.col("_row_idx") == 1)
     
-    Transformer_84_v = Transformer_84_ln_Nxt_Lst_Part_v.withColumn('Last2', expr("""CASE WHEN LEAD(BORM_KEY_1) OVER (PARTITION BY BORM_KEY_1 ORDER BY BORM_KEY_1 ASC NULLS LAST) IS NULL THEN TRUE ELSE FALSE END""").cast('string').alias('Last2')).withColumn('A', expr("""IF(A = 'X' OR Last1 = 1, ((IF(ISNOTNULL((MI006_NEXT_REPRICE_DATE)), (MI006_NEXT_REPRICE_DATE), ('X')))), A)""").cast('string').alias('A')).withColumn('B', expr("""IF(B = 'X' OR Last1 = 1, ((IF(ISNOTNULL((MI006_LAST_REPRICE_DATE)), (MI006_LAST_REPRICE_DATE), ('X')))), B)""").cast('string').alias('B')).withColumn('Last1', expr("""CASE WHEN LEAD(BORM_KEY_1) OVER (PARTITION BY BORM_KEY_1 ORDER BY BORM_KEY_1 ASC NULLS LAST) IS NULL THEN TRUE ELSE FALSE END""").cast('string').alias('Last1'))
+
+    # 4. Generate output according to CTrxOutput spec
+    CTrxOutput = joi_LONP.select(
+        F.col("BORM_KEY_1").cast("string"),
+        F.col("MI006_MEMB_CUST_AC").cast("string"),
+        F.col("MI006_RATE_REPRICE_TYPE").cast("string"),
+        F.col("FINAL_A").alias("MI006_NEXT_REPRICE_DATE").cast("int"),
+        F.col("FINAL_B").alias("MI006_LAST_REPRICE_DATE").cast("int")
+    )
     
-    Transformer_84_joi_LONP_v = Transformer_84_v.select(col('BORM_KEY_1').cast('string').alias('BORM_KEY_1'),col('MI006_MEMB_CUST_AC').cast('string').alias('MI006_MEMB_CUST_AC'),col('MI006_RATE_REPRICE_TYPE').cast('string').alias('MI006_RATE_REPRICE_TYPE'),col('A').cast('integer').alias('MI006_NEXT_REPRICE_DATE'),col('B').cast('integer').alias('MI006_LAST_REPRICE_DATE'))
     
-    Transformer_84_joi_LONP_v = Transformer_84_joi_LONP_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","MI006_MEMB_CUST_AC","RTRIM(MI006_RATE_REPRICE_TYPE) AS MI006_RATE_REPRICE_TYPE","MI006_NEXT_REPRICE_DATE","MI006_LAST_REPRICE_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RATE_REPRICE_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_NEXT_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LAST_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
+    Transformer_84_joi_LONP_v = CTrxOutput.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","MI006_MEMB_CUST_AC","RTRIM(MI006_RATE_REPRICE_TYPE) AS MI006_RATE_REPRICE_TYPE","MI006_NEXT_REPRICE_DATE","MI006_LAST_REPRICE_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RATE_REPRICE_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_NEXT_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LAST_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
     spark.sql("DROP TABLE IF EXISTS Transformer_84_joi_LONP_v").show()
     
@@ -984,12 +1013,57 @@ def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_arg
     
     
     Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v=spark.table('Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v')
+    group_keys = ["BORM_KEY_1", "SEQ", "MI006_MEMB_CUST_AC"]
+    window_spec = Window.partitionBy(group_keys).orderBy("MI006_EFF_TIER_N_RATE_DT")
+    df_with_index = Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.withColumn("Pivot_index", F.row_number().over(window_spec) - 1)
+    # 2. These are the metrics we are spreading across the 5 array slots.
+    # We use explicit aliases to control the naming convention.
+    df_pivoted = df_with_index.groupBy(group_keys).pivot("Pivot_index", [0, 1, 2, 3, 4]).agg(
+        F.first("MI006_EFF_TIER_N_RATE_DT").alias("MI006_EFF_TIER_N_RATE_DT"),
+        F.first("MI006_EFF_TIER_N_RATE_END_DT").alias("MI006_EFF_TIER_N_RATE_END_DT"),
+        F.first("MI006_FLAT_RATE_TIER_N").alias("MI006_FLAT_RATE_TIER_N"),
+        F.first("MI006_ADJ_PERC_RATE_TIER_N").alias("MI006_ADJ_PERC_RATE_TIER_N"),
+        F.first("MI006_INDEX_CD_RT_TIER_N").alias("MI006_INDEX_CD_RT_TIER_N")
+    )
+
+    # 3. Rename columns to match the CCustomOutput spec.
+    # Spark Pivot output format is: {PivotValue}_{AliasName}
+    # DataStage spec format is: {Name} (for index 0) and {Name}_{Index} (for 1-4)
     
-    Vertical_Pivot_of_Tier_rates_v = Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.groupBy('MI006_MEMB_CUST_AC').pivot('MI006_EFF_TIER_N_RATE_DT').agg(F.first('MI006_EFF_TIER_N_RATE_DT').alias('MI006_EFF_TIER_N_RATE_DT'), F.first('MI006_EFF_TIER_N_RATE_END_DT').alias('MI006_EFF_TIER_N_RATE_END_DT'), F.first('MI006_FLAT_RATE_TIER_N').alias('MI006_FLAT_RATE_TIER_N'), F.first('MI006_ADJ_PERC_RATE_TIER_N').alias('MI006_ADJ_PERC_RATE_TIER_N'), F.first('MI006_INDEX_CD_RT_TIER_N').alias('MI006_INDEX_CD_RT_TIER_N')).withColumnRenamed('0_MI006_EFF_TIER_N_RATE_DT', 'MI006_EFF_TIER_N_RATE_DT_0').withColumnRenamed('0_MI006_EFF_TIER_N_RATE_END_DT', 'MI006_EFF_TIER_N_RATE_END_DT_0').withColumnRenamed('0_MI006_FLAT_RATE_TIER_N', 'MI006_FLAT_RATE_TIER_N_0').withColumnRenamed('0_MI006_ADJ_PERC_RATE_TIER_N', 'MI006_ADJ_PERC_RATE_TIER_N_0').withColumnRenamed('0_MI006_INDEX_CD_RT_TIER_N', 'MI006_INDEX_CD_RT_TIER_N_0').withColumnRenamed('1_MI006_EFF_TIER_N_RATE_DT', 'MI006_EFF_TIER_N_RATE_DT_1').withColumnRenamed('1_MI006_EFF_TIER_N_RATE_END_DT', 'MI006_EFF_TIER_N_RATE_END_DT_1').withColumnRenamed('1_MI006_FLAT_RATE_TIER_N', 'MI006_FLAT_RATE_TIER_N_1').withColumnRenamed('1_MI006_ADJ_PERC_RATE_TIER_N', 'MI006_ADJ_PERC_RATE_TIER_N_1').withColumnRenamed('1_MI006_INDEX_CD_RT_TIER_N', 'MI006_INDEX_CD_RT_TIER_N_1').withColumnRenamed('2_MI006_EFF_TIER_N_RATE_DT', 'MI006_EFF_TIER_N_RATE_DT_2').withColumnRenamed('2_MI006_EFF_TIER_N_RATE_END_DT', 'MI006_EFF_TIER_N_RATE_END_DT_2').withColumnRenamed('2_MI006_FLAT_RATE_TIER_N', 'MI006_FLAT_RATE_TIER_N_2').withColumnRenamed('2_MI006_ADJ_PERC_RATE_TIER_N', 'MI006_ADJ_PERC_RATE_TIER_N_2').withColumnRenamed('2_MI006_INDEX_CD_RT_TIER_N', 'MI006_INDEX_CD_RT_TIER_N_2').withColumnRenamed('3_MI006_EFF_TIER_N_RATE_DT', 'MI006_EFF_TIER_N_RATE_DT_3').withColumnRenamed('3_MI006_EFF_TIER_N_RATE_END_DT', 'MI006_EFF_TIER_N_RATE_END_DT_3').withColumnRenamed('3_MI006_FLAT_RATE_TIER_N', 'MI006_FLAT_RATE_TIER_N_3').withColumnRenamed('3_MI006_ADJ_PERC_RATE_TIER_N', 'MI006_ADJ_PERC_RATE_TIER_N_3').withColumnRenamed('3_MI006_INDEX_CD_RT_TIER_N', 'MI006_INDEX_CD_RT_TIER_N_3').withColumnRenamed('4_MI006_EFF_TIER_N_RATE_DT', 'MI006_EFF_TIER_N_RATE_DT_4').withColumnRenamed('4_MI006_EFF_TIER_N_RATE_END_DT', 'MI006_EFF_TIER_N_RATE_END_DT_4').withColumnRenamed('4_MI006_FLAT_RATE_TIER_N', 'MI006_FLAT_RATE_TIER_N_4').withColumnRenamed('4_MI006_ADJ_PERC_RATE_TIER_N', 'MI006_ADJ_PERC_RATE_TIER_N_4').withColumnRenamed('4_MI006_INDEX_CD_RT_TIER_N', 'MI006_INDEX_CD_RT_TIER_N_4').withColumnRenamed('MI006_EFF_TIER_N_RATE_DT_0', 'MI006_EFF_TIER_N_RATE_DT').withColumnRenamed('MI006_EFF_TIER_N_RATE_END_DT_0', 'MI006_EFF_TIER_N_RATE_END_DT').withColumnRenamed('MI006_FLAT_RATE_TIER_N_0', 'MI006_FLAT_RATE_TIER_N').withColumnRenamed('MI006_ADJ_PERC_RATE_TIER_N_0', 'MI006_ADJ_PERC_RATE_TIER_N').withColumnRenamed('MI006_INDEX_CD_RT_TIER_N_0', 'MI006_INDEX_CD_RT_TIER_N')
+    final_cols = group_keys.copy()
     
-    Vertical_Pivot_of_Tier_rates_i_v_0 = Vertical_Pivot_of_Tier_rates_v
+    # Define the order of metrics to match your MappingAdd records
+    metrics = [
+        "MI006_EFF_TIER_N_RATE_DT",
+        "MI006_EFF_TIER_N_RATE_END_DT",
+        "MI006_FLAT_RATE_TIER_N",
+        "MI006_ADJ_PERC_RATE_TIER_N",
+        "MI006_INDEX_CD_RT_TIER_N"
+    ]
+
+    # Dynamically build the select list to match DataStage naming exactly
+    for i in range(5):
+        for m in metrics:
+            spark_col_name = f"{i}_{m}"
+            ds_col_name = f"{m}_{i}" if i > 0 else m
+            
+            # Add to selection with the correct DS name
+            if i == 0:
+                # Slot 0 has no suffix in your DS spec
+                final_cols.append(F.col(spark_col_name).alias(m))
+            else:
+                # Slots 1-4 have suffixes _1, _2, etc.
+                final_cols.append(F.col(spark_col_name).alias(ds_col_name))
+
+    # Apply the selection and naming
+    df_final = df_pivoted.select(final_cols)
+
+    # # 4. Final Casting to Numeric(8,4) as per DS Precision/Scale
+    # decimal_cols = [c for c in df_final.columns if "RATE_TIER_N" in c]
+    # for c in decimal_cols:
+    #     df_final = df_final.withColumn(c, F.col(c).cast("decimal(8,4)"))
     
-    Vertical_Pivot_of_Tier_rates_i_v = Vertical_Pivot_of_Tier_rates_i_v_0.select(col('BORM_KEY_1').cast('string').alias('B_KEY'),col('SEQ').cast('integer').alias('SEQ'),expr("""MI006_MEMB_CUST_AC""").cast('string').alias('MI006_MEMB_CUST_AC'),expr("""MI006_EFF_TIER_N_RATE_DT""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT'),expr("""MI006_EFF_TIER_N_RATE_END_DT""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT'),expr("""MI006_FLAT_RATE_TIER_N""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N'),expr("""MI006_ADJ_PERC_RATE_TIER_N""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N'),expr("""MI006_INDEX_CD_RT_TIER_N""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N'),expr("""MI006_EFF_TIER_N_RATE_DT_1""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_1'),expr("""MI006_EFF_TIER_N_RATE_END_DT_1""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_1'),expr("""MI006_FLAT_RATE_TIER_N_1""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_1'),expr("""MI006_ADJ_PERC_RATE_TIER_N_1""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_1'),expr("""MI006_INDEX_CD_RT_TIER_N_1""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_1'),expr("""MI006_EFF_TIER_N_RATE_DT_2""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_2'),expr("""MI006_EFF_TIER_N_RATE_END_DT_2""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_2'),expr("""MI006_FLAT_RATE_TIER_N_2""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_2'),expr("""MI006_ADJ_PERC_RATE_TIER_N_2""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_2'),expr("""MI006_INDEX_CD_RT_TIER_N_2""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_2'),expr("""MI006_EFF_TIER_N_RATE_DT_3""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_3'),expr("""MI006_EFF_TIER_N_RATE_END_DT_3""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_3'),expr("""MI006_FLAT_RATE_TIER_N_3""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_3'),expr("""MI006_ADJ_PERC_RATE_TIER_N_3""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_3'),expr("""MI006_INDEX_CD_RT_TIER_N_3""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_3'),expr("""MI006_EFF_TIER_N_RATE_DT_4""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_4'),expr("""MI006_EFF_TIER_N_RATE_END_DT_4""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_4'),expr("""MI006_FLAT_RATE_TIER_N_4""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_4'),expr("""MI006_ADJ_PERC_RATE_TIER_N_4""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_4'),expr("""MI006_INDEX_CD_RT_TIER_N_4""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_4'))
+    Vertical_Pivot_of_Tier_rates_i_v = df_final.select(col('BORM_KEY_1').cast('string').alias('B_KEY'),col('SEQ').cast('integer').alias('SEQ'),expr("""MI006_MEMB_CUST_AC""").cast('string').alias('MI006_MEMB_CUST_AC'),expr("""MI006_EFF_TIER_N_RATE_DT""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT'),expr("""MI006_EFF_TIER_N_RATE_END_DT""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT'),expr("""MI006_FLAT_RATE_TIER_N""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N'),expr("""MI006_ADJ_PERC_RATE_TIER_N""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N'),expr("""MI006_INDEX_CD_RT_TIER_N""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N'),expr("""MI006_EFF_TIER_N_RATE_DT_1""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_1'),expr("""MI006_EFF_TIER_N_RATE_END_DT_1""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_1'),expr("""MI006_FLAT_RATE_TIER_N_1""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_1'),expr("""MI006_ADJ_PERC_RATE_TIER_N_1""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_1'),expr("""MI006_INDEX_CD_RT_TIER_N_1""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_1'),expr("""MI006_EFF_TIER_N_RATE_DT_2""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_2'),expr("""MI006_EFF_TIER_N_RATE_END_DT_2""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_2'),expr("""MI006_FLAT_RATE_TIER_N_2""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_2'),expr("""MI006_ADJ_PERC_RATE_TIER_N_2""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_2'),expr("""MI006_INDEX_CD_RT_TIER_N_2""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_2'),expr("""MI006_EFF_TIER_N_RATE_DT_3""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_3'),expr("""MI006_EFF_TIER_N_RATE_END_DT_3""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_3'),expr("""MI006_FLAT_RATE_TIER_N_3""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_3'),expr("""MI006_ADJ_PERC_RATE_TIER_N_3""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_3'),expr("""MI006_INDEX_CD_RT_TIER_N_3""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_3'),expr("""MI006_EFF_TIER_N_RATE_DT_4""").cast('integer').alias('MI006_EFF_TIER_N_RATE_DT_4'),expr("""MI006_EFF_TIER_N_RATE_END_DT_4""").cast('integer').alias('MI006_EFF_TIER_N_RATE_END_DT_4'),expr("""MI006_FLAT_RATE_TIER_N_4""").cast('decimal(8,4)').alias('MI006_FLAT_RATE_TIER_N_4'),expr("""MI006_ADJ_PERC_RATE_TIER_N_4""").cast('decimal(8,4)').alias('MI006_ADJ_PERC_RATE_TIER_N_4'),expr("""MI006_INDEX_CD_RT_TIER_N_4""").cast('decimal(8,4)').alias('MI006_INDEX_CD_RT_TIER_N_4'))
     
     Vertical_Pivot_of_Tier_rates_i_v = Vertical_Pivot_of_Tier_rates_i_v.selectExpr("RTRIM(B_KEY) AS B_KEY","SEQ","MI006_MEMB_CUST_AC","MI006_EFF_TIER_N_RATE_DT","MI006_EFF_TIER_N_RATE_END_DT","MI006_FLAT_RATE_TIER_N","MI006_ADJ_PERC_RATE_TIER_N","MI006_INDEX_CD_RT_TIER_N","MI006_EFF_TIER_N_RATE_DT_1","MI006_EFF_TIER_N_RATE_END_DT_1","MI006_FLAT_RATE_TIER_N_1","MI006_ADJ_PERC_RATE_TIER_N_1","MI006_INDEX_CD_RT_TIER_N_1","MI006_EFF_TIER_N_RATE_DT_2","MI006_EFF_TIER_N_RATE_END_DT_2","MI006_FLAT_RATE_TIER_N_2","MI006_ADJ_PERC_RATE_TIER_N_2","MI006_INDEX_CD_RT_TIER_N_2","MI006_EFF_TIER_N_RATE_DT_3","MI006_EFF_TIER_N_RATE_END_DT_3","MI006_FLAT_RATE_TIER_N_3","MI006_ADJ_PERC_RATE_TIER_N_3","MI006_INDEX_CD_RT_TIER_N_3","MI006_EFF_TIER_N_RATE_DT_4","MI006_EFF_TIER_N_RATE_END_DT_4","MI006_FLAT_RATE_TIER_N_4","MI006_ADJ_PERC_RATE_TIER_N_4","MI006_INDEX_CD_RT_TIER_N_4").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_2', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_2', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_3', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_3', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_4', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_4', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}]}))
     
