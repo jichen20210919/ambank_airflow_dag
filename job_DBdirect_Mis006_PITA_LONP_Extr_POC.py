@@ -677,7 +677,7 @@ def NETZ_SRC_TBL_NM2(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v = NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","SEQ","MI006_MEMB_CUST_AC","RTRIM(MI006_RATE_REPRICE_TYPE) AS MI006_RATE_REPRICE_TYPE","MI006_NEXT_REPRICE_DATE","MI006_LAST_REPRICE_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RATE_REPRICE_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_NEXT_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LAST_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v PURGE").show()
     
     print("NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v")
     
@@ -687,7 +687,7 @@ def NETZ_SRC_TBL_NM2(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v.show(1000,False)
     
-    NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v.write.mode("overwrite").saveAsTable("NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v")
+    NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v")
     
 
 @task
@@ -881,7 +881,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source_v = NETZ_SRC_TBL_NM_lnk_Source_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","SEQ","MI006_MEMB_CUST_AC","MI006_EFF_TIER_N_RATE_DT","MI006_EFF_TIER_N_RATE_END_DT","MI006_FLAT_RATE_TIER_N","MI006_INDEX_CD_RT_TIER_N","MI006_ADJ_PERC_RATE_TIER_N").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_TBL_NM_lnk_Source_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source_v PURGE").show()
     
     print("NETZ_SRC_TBL_NM_lnk_Source_v")
     
@@ -891,7 +891,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source_v.show(1000,False)
     
-    NETZ_SRC_TBL_NM_lnk_Source_v.write.mode("overwrite").saveAsTable("NETZ_SRC_TBL_NM_lnk_Source_v")
+    NETZ_SRC_TBL_NM_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -903,11 +903,11 @@ def Transformer_84_ln_Nxt_Lst_Part(spark: SparkSession, sc: SparkContext, **kw_a
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v=spark.table('NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v')
+    NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v')
     
     Transformer_84_ln_Nxt_Lst_Part_v=NETZ_SRC_TBL_NM2_ln_Nxt_Lst_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_84_ln_Nxt_Lst_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_ln_Nxt_Lst_Part_v PURGE").show()
     
     print("Transformer_84_ln_Nxt_Lst_Part_v")
     
@@ -917,7 +917,7 @@ def Transformer_84_ln_Nxt_Lst_Part(spark: SparkSession, sc: SparkContext, **kw_a
     
     Transformer_84_ln_Nxt_Lst_Part_v.show(1000,False)
     
-    Transformer_84_ln_Nxt_Lst_Part_v.write.mode("overwrite").saveAsTable("Transformer_84_ln_Nxt_Lst_Part_v")
+    Transformer_84_ln_Nxt_Lst_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_ln_Nxt_Lst_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -929,11 +929,11 @@ def Vertical_Pivot_of_Tier_rates_lnk_Source_Part(spark: SparkSession, sc: SparkC
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_TBL_NM_lnk_Source_v=spark.table('NETZ_SRC_TBL_NM_lnk_Source_v')
+    NETZ_SRC_TBL_NM_lnk_Source_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source_v')
     
     Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v=NETZ_SRC_TBL_NM_lnk_Source_v
     
-    spark.sql("DROP TABLE IF EXISTS Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v PURGE").show()
     
     print("Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v")
     
@@ -943,7 +943,7 @@ def Vertical_Pivot_of_Tier_rates_lnk_Source_Part(spark: SparkSession, sc: SparkC
     
     Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.show(1000,False)
     
-    Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v")
+    Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -955,7 +955,8 @@ def Transformer_84(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_84_ln_Nxt_Lst_Part_v=spark.table('Transformer_84_ln_Nxt_Lst_Part_v')
+    Transformer_84_ln_Nxt_Lst_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_ln_Nxt_Lst_Part_v')
+	
     # 1. Define the Window partitioned by the key
     # We need an ordering column to ensure "LastRow" is deterministic. 
     # If your DS job had no specific sort within the key, we assume natural order.
@@ -990,7 +991,7 @@ def Transformer_84(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_84_joi_LONP_v = CTrxOutput.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","MI006_MEMB_CUST_AC","RTRIM(MI006_RATE_REPRICE_TYPE) AS MI006_RATE_REPRICE_TYPE","MI006_NEXT_REPRICE_DATE","MI006_LAST_REPRICE_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RATE_REPRICE_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_NEXT_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LAST_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_84_joi_LONP_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_joi_LONP_v PURGE").show()
     
     print("Transformer_84_joi_LONP_v")
     
@@ -1000,7 +1001,7 @@ def Transformer_84(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_84_joi_LONP_v.show(1000,False)
     
-    Transformer_84_joi_LONP_v.write.mode("overwrite").saveAsTable("Transformer_84_joi_LONP_v")
+    Transformer_84_joi_LONP_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_joi_LONP_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1012,7 +1013,11 @@ def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_arg
     spark_register_ds_common_functions(spark)
     
     
-    Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v=spark.table('Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v')
+    Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v')
+	
+	
+	
+	
     group_keys = ["BORM_KEY_1", "SEQ", "MI006_MEMB_CUST_AC"]
     window_spec = Window.partitionBy(group_keys).orderBy("MI006_EFF_TIER_N_RATE_DT")
     df_with_index = Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.withColumn("Pivot_index", F.row_number().over(window_spec) - 1)
@@ -1067,7 +1072,7 @@ def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_arg
     
     Vertical_Pivot_of_Tier_rates_i_v = Vertical_Pivot_of_Tier_rates_i_v.selectExpr("RTRIM(B_KEY) AS B_KEY","SEQ","MI006_MEMB_CUST_AC","MI006_EFF_TIER_N_RATE_DT","MI006_EFF_TIER_N_RATE_END_DT","MI006_FLAT_RATE_TIER_N","MI006_ADJ_PERC_RATE_TIER_N","MI006_INDEX_CD_RT_TIER_N","MI006_EFF_TIER_N_RATE_DT_1","MI006_EFF_TIER_N_RATE_END_DT_1","MI006_FLAT_RATE_TIER_N_1","MI006_ADJ_PERC_RATE_TIER_N_1","MI006_INDEX_CD_RT_TIER_N_1","MI006_EFF_TIER_N_RATE_DT_2","MI006_EFF_TIER_N_RATE_END_DT_2","MI006_FLAT_RATE_TIER_N_2","MI006_ADJ_PERC_RATE_TIER_N_2","MI006_INDEX_CD_RT_TIER_N_2","MI006_EFF_TIER_N_RATE_DT_3","MI006_EFF_TIER_N_RATE_END_DT_3","MI006_FLAT_RATE_TIER_N_3","MI006_ADJ_PERC_RATE_TIER_N_3","MI006_INDEX_CD_RT_TIER_N_3","MI006_EFF_TIER_N_RATE_DT_4","MI006_EFF_TIER_N_RATE_END_DT_4","MI006_FLAT_RATE_TIER_N_4","MI006_ADJ_PERC_RATE_TIER_N_4","MI006_INDEX_CD_RT_TIER_N_4").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_2', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_2', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_3', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_3', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_DT_4', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER_N_RATE_END_DT_4', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER_N_4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER_N_4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER_N_4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Vertical_Pivot_of_Tier_rates_i_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_i_v PURGE").show()
     
     print("Vertical_Pivot_of_Tier_rates_i_v")
     
@@ -1077,7 +1082,7 @@ def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_arg
     
     Vertical_Pivot_of_Tier_rates_i_v.show(1000,False)
     
-    Vertical_Pivot_of_Tier_rates_i_v.write.mode("overwrite").saveAsTable("Vertical_Pivot_of_Tier_rates_i_v")
+    Vertical_Pivot_of_Tier_rates_i_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_i_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1089,11 +1094,11 @@ def joi_PITA_joi_LONP_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_84_joi_LONP_v=spark.table('Transformer_84_joi_LONP_v')
+    Transformer_84_joi_LONP_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_joi_LONP_v')
     
     joi_PITA_joi_LONP_Part_v=Transformer_84_joi_LONP_v
     
-    spark.sql("DROP TABLE IF EXISTS joi_PITA_joi_LONP_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_LONP_Part_v PURGE").show()
     
     print("joi_PITA_joi_LONP_Part_v")
     
@@ -1103,7 +1108,7 @@ def joi_PITA_joi_LONP_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     joi_PITA_joi_LONP_Part_v.show(1000,False)
     
-    joi_PITA_joi_LONP_Part_v.write.mode("overwrite").saveAsTable("joi_PITA_joi_LONP_Part_v")
+    joi_PITA_joi_LONP_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_LONP_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1115,11 +1120,11 @@ def Transformer_50_i_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Vertical_Pivot_of_Tier_rates_i_v=spark.table('Vertical_Pivot_of_Tier_rates_i_v')
+    Vertical_Pivot_of_Tier_rates_i_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_i_v')
     
     Transformer_50_i_Part_v=Vertical_Pivot_of_Tier_rates_i_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_50_i_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_i_Part_v PURGE").show()
     
     print("Transformer_50_i_Part_v")
     
@@ -1129,7 +1134,7 @@ def Transformer_50_i_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_50_i_Part_v.show(1000,False)
     
-    Transformer_50_i_Part_v.write.mode("overwrite").saveAsTable("Transformer_50_i_Part_v")
+    Transformer_50_i_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_i_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1141,7 +1146,7 @@ def Transformer_50(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_50_i_Part_v=spark.table('Transformer_50_i_Part_v')
+    Transformer_50_i_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_i_Part_v')
     
     Transformer_50_v = Transformer_50_i_Part_v
     
@@ -1149,7 +1154,7 @@ def Transformer_50(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_50_DSLink61_v = Transformer_50_DSLink61_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","SEQ","MI006_EFF_TIER1_RATE_DT","MI006_EFF_TIER2_RATE_DT","MI006_EFF_TIER3_RATE_DT","MI006_EFF_TIER4_RATE_DT","MI006_EFF_TIER5_RATE_DT","MI006_EFF_TIER1_RATE_END_DT","MI006_EFF_TIER2_RATE_END_DT","MI006_EFF_TIER3_RATE_END_DT","MI006_EFF_TIER4_RATE_END_DT","MI006_EFF_TIER5_RATE_END_DT","MI006_FLAT_RATE_TIER1","MI006_FLAT_RATE_TIER2","MI006_FLAT_RATE_TIER3","MI006_FLAT_RATE_TIER4","MI006_FLAT_RATE_TIER5","MI006_INDEX_CD_RT_TIER1","MI006_INDEX_CD_RT_TIER2","MI006_INDEX_CD_RT_TIER3","MI006_INDEX_CD_RT_TIER4","MI006_INDEX_CD_RT_TIER5","MI006_ADJ_PERC_RATE_TIER1","MI006_ADJ_PERC_RATE_TIER2","MI006_ADJ_PERC_RATE_TIER3","MI006_ADJ_PERC_RATE_TIER4","MI006_ADJ_PERC_RATE_TIER5").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_50_DSLink61_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_DSLink61_v PURGE").show()
     
     print("Transformer_50_DSLink61_v")
     
@@ -1159,7 +1164,7 @@ def Transformer_50(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_50_DSLink61_v.show(1000,False)
     
-    Transformer_50_DSLink61_v.write.mode("overwrite").saveAsTable("Transformer_50_DSLink61_v")
+    Transformer_50_DSLink61_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_DSLink61_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1171,11 +1176,11 @@ def Copy_59_DSLink61_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_50_DSLink61_v=spark.table('Transformer_50_DSLink61_v')
+    Transformer_50_DSLink61_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_DSLink61_v')
     
     Copy_59_DSLink61_Part_v=Transformer_50_DSLink61_v
     
-    spark.sql("DROP TABLE IF EXISTS Copy_59_DSLink61_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_DSLink61_Part_v PURGE").show()
     
     print("Copy_59_DSLink61_Part_v")
     
@@ -1185,7 +1190,7 @@ def Copy_59_DSLink61_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Copy_59_DSLink61_Part_v.show(1000,False)
     
-    Copy_59_DSLink61_Part_v.write.mode("overwrite").saveAsTable("Copy_59_DSLink61_Part_v")
+    Copy_59_DSLink61_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_DSLink61_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1197,7 +1202,7 @@ def Copy_59(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Copy_59_DSLink61_Part_v=spark.table('Copy_59_DSLink61_Part_v')
+    Copy_59_DSLink61_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_DSLink61_Part_v')
     
     Copy_59_v=Copy_59_DSLink61_Part_v
     
@@ -1205,7 +1210,7 @@ def Copy_59(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Copy_59_joi_PITA_v = Copy_59_joi_PITA_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","SEQ","MI006_EFF_TIER1_RATE_DT","MI006_EFF_TIER2_RATE_DT","MI006_EFF_TIER3_RATE_DT","MI006_EFF_TIER4_RATE_DT","MI006_EFF_TIER5_RATE_DT","MI006_EFF_TIER1_RATE_END_DT","MI006_EFF_TIER2_RATE_END_DT","MI006_EFF_TIER3_RATE_END_DT","MI006_EFF_TIER4_RATE_END_DT","MI006_EFF_TIER5_RATE_END_DT","MI006_FLAT_RATE_TIER1","MI006_FLAT_RATE_TIER2","MI006_FLAT_RATE_TIER3","MI006_FLAT_RATE_TIER4","MI006_FLAT_RATE_TIER5","MI006_INDEX_CD_RT_TIER1","MI006_INDEX_CD_RT_TIER2","MI006_INDEX_CD_RT_TIER3","MI006_INDEX_CD_RT_TIER4","MI006_INDEX_CD_RT_TIER5","MI006_ADJ_PERC_RATE_TIER1","MI006_ADJ_PERC_RATE_TIER2","MI006_ADJ_PERC_RATE_TIER3","MI006_ADJ_PERC_RATE_TIER4","MI006_ADJ_PERC_RATE_TIER5").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Copy_59_joi_PITA_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_joi_PITA_v PURGE").show()
     
     print("Copy_59_joi_PITA_v")
     
@@ -1215,7 +1220,7 @@ def Copy_59(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Copy_59_joi_PITA_v.show(1000,False)
     
-    Copy_59_joi_PITA_v.write.mode("overwrite").saveAsTable("Copy_59_joi_PITA_v")
+    Copy_59_joi_PITA_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_joi_PITA_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1227,11 +1232,11 @@ def joi_PITA_joi_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Copy_59_joi_PITA_v=spark.table('Copy_59_joi_PITA_v')
+    Copy_59_joi_PITA_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_joi_PITA_v')
     
     joi_PITA_joi_PITA_Part_v=Copy_59_joi_PITA_v
     
-    spark.sql("DROP TABLE IF EXISTS joi_PITA_joi_PITA_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_PITA_Part_v PURGE").show()
     
     print("joi_PITA_joi_PITA_Part_v")
     
@@ -1241,7 +1246,7 @@ def joi_PITA_joi_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     joi_PITA_joi_PITA_Part_v.show(1000,False)
     
-    joi_PITA_joi_PITA_Part_v.write.mode("overwrite").saveAsTable("joi_PITA_joi_PITA_Part_v")
+    joi_PITA_joi_PITA_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_PITA_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1253,9 +1258,9 @@ def joi_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    joi_PITA_joi_PITA_Part_v=spark.table('joi_PITA_joi_PITA_Part_v')
+    joi_PITA_joi_PITA_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_PITA_Part_v')
     
-    joi_PITA_joi_LONP_Part_v=spark.table('joi_PITA_joi_LONP_Part_v')
+    joi_PITA_joi_LONP_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_LONP_Part_v')
     
     joi_PITA_v=joi_PITA_joi_PITA_Part_v.join(joi_PITA_joi_LONP_Part_v,['BORM_KEY_1'],'left')
     
@@ -1263,7 +1268,7 @@ def joi_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     joi_PITA_trx_PITA_v = joi_PITA_trx_PITA_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","SEQ","MI006_MEMB_CUST_AC","MI006_EFF_TIER1_RATE_DT","MI006_EFF_TIER2_RATE_DT","MI006_EFF_TIER3_RATE_DT","MI006_EFF_TIER4_RATE_DT","MI006_EFF_TIER5_RATE_DT","MI006_EFF_TIER1_RATE_END_DT","MI006_EFF_TIER2_RATE_END_DT","MI006_EFF_TIER3_RATE_END_DT","MI006_EFF_TIER4_RATE_END_DT","MI006_EFF_TIER5_RATE_END_DT","MI006_FLAT_RATE_TIER1","MI006_FLAT_RATE_TIER2","MI006_FLAT_RATE_TIER3","MI006_FLAT_RATE_TIER4","MI006_FLAT_RATE_TIER5","MI006_INDEX_CD_RT_TIER1","MI006_INDEX_CD_RT_TIER2","MI006_INDEX_CD_RT_TIER3","MI006_INDEX_CD_RT_TIER4","MI006_INDEX_CD_RT_TIER5","MI006_ADJ_PERC_RATE_TIER1","MI006_ADJ_PERC_RATE_TIER2","MI006_ADJ_PERC_RATE_TIER3","MI006_ADJ_PERC_RATE_TIER4","MI006_ADJ_PERC_RATE_TIER5","RTRIM(MI006_RATE_REPRICE_TYPE) AS MI006_RATE_REPRICE_TYPE","MI006_NEXT_REPRICE_DATE","MI006_LAST_REPRICE_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RATE_REPRICE_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_NEXT_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LAST_REPRICE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS joi_PITA_trx_PITA_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_trx_PITA_v PURGE").show()
     
     print("joi_PITA_trx_PITA_v")
     
@@ -1273,7 +1278,7 @@ def joi_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     joi_PITA_trx_PITA_v.show(1000,False)
     
-    joi_PITA_trx_PITA_v.write.mode("overwrite").saveAsTable("joi_PITA_trx_PITA_v")
+    joi_PITA_trx_PITA_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_trx_PITA_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1285,11 +1290,11 @@ def trx_PITA_trx_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    joi_PITA_trx_PITA_v=spark.table('joi_PITA_trx_PITA_v')
+    joi_PITA_trx_PITA_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_trx_PITA_v')
     
     trx_PITA_trx_PITA_Part_v=joi_PITA_trx_PITA_v
     
-    spark.sql("DROP TABLE IF EXISTS trx_PITA_trx_PITA_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_trx_PITA_Part_v PURGE").show()
     
     print("trx_PITA_trx_PITA_Part_v")
     
@@ -1299,7 +1304,7 @@ def trx_PITA_trx_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     trx_PITA_trx_PITA_Part_v.show(1000,False)
     
-    trx_PITA_trx_PITA_Part_v.write.mode("overwrite").saveAsTable("trx_PITA_trx_PITA_Part_v")
+    trx_PITA_trx_PITA_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_trx_PITA_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1311,7 +1316,7 @@ def trx_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    trx_PITA_trx_PITA_Part_v=spark.table('trx_PITA_trx_PITA_Part_v')
+    trx_PITA_trx_PITA_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_trx_PITA_Part_v')
     
     trx_PITA_v = trx_PITA_trx_PITA_Part_v
     
@@ -1319,7 +1324,7 @@ def trx_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     trx_PITA_Lnk_PITA_Tgt_v = trx_PITA_Lnk_PITA_Tgt_v.selectExpr("B_KEY","SEQ","MI006_EFF_TIER1_RATE_DT","MI006_EFF_TIER2_RATE_DT","MI006_EFF_TIER3_RATE_DT","MI006_EFF_TIER4_RATE_DT","MI006_EFF_TIER5_RATE_DT","MI006_EFF_TIER1_RATE_END_DT","MI006_EFF_TIER2_RATE_END_DT","MI006_EFF_TIER3_RATE_END_DT","MI006_EFF_TIER4_RATE_END_DT","MI006_EFF_TIER5_RATE_END_DT","MI006_LAST_REPRICE_DATE","MI006_NEXT_REPRICE_DATE","MI006_FLAT_RATE_TIER1","MI006_FLAT_RATE_TIER2","MI006_FLAT_RATE_TIER3","MI006_FLAT_RATE_TIER4","MI006_FLAT_RATE_TIER5","MI006_INDEX_CD_RT_TIER1","MI006_INDEX_CD_RT_TIER2","MI006_INDEX_CD_RT_TIER3","MI006_INDEX_CD_RT_TIER4","MI006_INDEX_CD_RT_TIER5","MI006_ADJ_PERC_RATE_TIER1","MI006_ADJ_PERC_RATE_TIER2","MI006_ADJ_PERC_RATE_TIER3","MI006_ADJ_PERC_RATE_TIER4","MI006_ADJ_PERC_RATE_TIER5","RTRIM(MI006_RATE_REPRICE_TYPE) AS MI006_RATE_REPRICE_TYPE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'SEQ', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER1_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER2_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER3_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER4_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_EFF_TIER5_RATE_END_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LAST_REPRICE_DATE', 'type': 'decimal(10,0)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NEXT_REPRICE_DATE', 'type': 'decimal(10,0)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_FLAT_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INDEX_CD_RT_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER1', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER2', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER3', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER4', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ADJ_PERC_RATE_TIER5', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RATE_REPRICE_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS trx_PITA_Lnk_PITA_Tgt_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_Lnk_PITA_Tgt_v PURGE").show()
     
     print("trx_PITA_Lnk_PITA_Tgt_v")
     
@@ -1329,7 +1334,7 @@ def trx_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     trx_PITA_Lnk_PITA_Tgt_v.show(1000,False)
     
-    trx_PITA_Lnk_PITA_Tgt_v.write.mode("overwrite").saveAsTable("trx_PITA_Lnk_PITA_Tgt_v")
+    trx_PITA_Lnk_PITA_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_Lnk_PITA_Tgt_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1341,11 +1346,11 @@ def DS_TGT_PITA_Lnk_PITA_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_ar
     spark_register_ds_common_functions(spark)
     
     
-    trx_PITA_Lnk_PITA_Tgt_v=spark.table('trx_PITA_Lnk_PITA_Tgt_v')
+    trx_PITA_Lnk_PITA_Tgt_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_Lnk_PITA_Tgt_v')
     
     DS_TGT_PITA_Lnk_PITA_Tgt_Part_v=trx_PITA_Lnk_PITA_Tgt_v
     
-    spark.sql("DROP TABLE IF EXISTS DS_TGT_PITA_Lnk_PITA_Tgt_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__DS_TGT_PITA_Lnk_PITA_Tgt_Part_v PURGE").show()
     
     print("DS_TGT_PITA_Lnk_PITA_Tgt_Part_v")
     
@@ -1355,7 +1360,7 @@ def DS_TGT_PITA_Lnk_PITA_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_ar
     
     DS_TGT_PITA_Lnk_PITA_Tgt_Part_v.show(1000,False)
     
-    DS_TGT_PITA_Lnk_PITA_Tgt_Part_v.write.mode("overwrite").saveAsTable("DS_TGT_PITA_Lnk_PITA_Tgt_Part_v")
+    DS_TGT_PITA_Lnk_PITA_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__DS_TGT_PITA_Lnk_PITA_Tgt_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1367,7 +1372,7 @@ def DS_TGT_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    DS_TGT_PITA_Lnk_PITA_Tgt_Part_v=spark.table('DS_TGT_PITA_Lnk_PITA_Tgt_Part_v')
+    DS_TGT_PITA_Lnk_PITA_Tgt_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__DS_TGT_PITA_Lnk_PITA_Tgt_Part_v')
     
     log = logging.getLogger(__name__)
     
@@ -1377,7 +1382,7 @@ def DS_TGT_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     log.info("write dataset files to "+locations)
     
-    spark.table("DS_TGT_PITA_Lnk_PITA_Tgt_Part_v").write.mode("overwrite").format("parquet").save(locations)
+    DS_TGT_PITA_Lnk_PITA_Tgt_Part_v.write.mode("overwrite").format("parquet").save(locations)
     
 
 ####################################[Main]###################################
@@ -1385,6 +1390,7 @@ import airflow
 with DAG(
     dag_id="job_DBdirect_Mis006_PITA_LONP_Extr_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     

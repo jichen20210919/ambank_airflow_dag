@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2026-02-02 23:10:40
+# @Time    : 2026-02-08 14:40:00
 # @Author  : cloudera
 # @File    : job_DBdirect_Mis006_RRMD_Extr_POC.py
 # @Copyright: Cloudera.Inc
@@ -252,7 +252,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source__v = NETZ_SRC_TBL_NM_lnk_Source__v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","RTRIM(MI006_MEMB_CUST_AC) AS MI006_MEMB_CUST_AC","rec_no","CNT_CAT_1","CNT_CAT_NOT_1","MAX_RR_DATE_CAT_1","MAX_RR_DATE_CAT_2","RTRIM(ACCT_NO) AS ACCT_NO","RTRIM(SEQ_NO) AS SEQ_NO","RTRIM(RR_TYPE) AS RR_TYPE","RTRIM(RR_REASON) AS RR_REASON","RTRIM(RR_CAT) AS RR_CAT","RTRIM(RR_SUB_CAT) AS RR_SUB_CAT","RTRIM(RR_COUNT) AS RR_COUNT","MP_EXP_DATE","RR_DATE","VIRTUAL_MIA","VIRTUAL_DPD","VIRTUAL_PRIN_ARR","VIRTUAL_INT_ARR","MI006_RNR_REPORTING_FLAG","RTRIM(MI006_PROMPT_PAY_CNT) AS MI006_PROMPT_PAY_CNT","MI006_ORI_RR_DATE","RTRIM(REHABILITAION_FLAG) AS REHABILITAION_FLAG","RR_PROMPT_PAY_CNT","RNR_AMORT_MONTH","RNR_ARR_AMORT_AMT","RTRIM(NPL_MP_EXP_ST) AS NPL_MP_EXP_ST").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'rec_no', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CNT_CAT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CNT_CAT_NOT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MAX_RR_DATE_CAT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MAX_RR_DATE_CAT_2', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'ACCT_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'SEQ_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(6)'}}, {'name': 'RR_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_REASON', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'RR_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_SUB_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_COUNT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'MP_EXP_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_MIA', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_DPD', 'type': 'decimal(5,0)', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_PRIN_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_INT_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_REPORTING_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_PROMPT_PAY_CNT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_ORI_RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REHABILITAION_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_PROMPT_PAY_CNT', 'type': 'decimal(2,0)', 'nullable': True, 'metadata': {}}, {'name': 'RNR_AMORT_MONTH', 'type': 'decimal(3,0)', 'nullable': True, 'metadata': {}}, {'name': 'RNR_ARR_AMORT_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'NPL_MP_EXP_ST', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_TBL_NM_lnk_Source__v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source__v PURGE").show()
     
     print("NETZ_SRC_TBL_NM_lnk_Source__v")
     
@@ -262,7 +262,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source__v.show(1000,False)
     
-    NETZ_SRC_TBL_NM_lnk_Source__v.write.mode("overwrite").saveAsTable("NETZ_SRC_TBL_NM_lnk_Source__v")
+    NETZ_SRC_TBL_NM_lnk_Source__v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source__v")
     
 
 @task
@@ -280,11 +280,11 @@ def Sort_56_lnk_Source__Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_TBL_NM_lnk_Source__v=spark.table('NETZ_SRC_TBL_NM_lnk_Source__v')
+    NETZ_SRC_TBL_NM_lnk_Source__v=spark.table('datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source__v')
     
     Sort_56_lnk_Source__Part_v=NETZ_SRC_TBL_NM_lnk_Source__v
     
-    spark.sql("DROP TABLE IF EXISTS Sort_56_lnk_Source__Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Sort_56_lnk_Source__Part_v PURGE").show()
     
     print("Sort_56_lnk_Source__Part_v")
     
@@ -294,7 +294,7 @@ def Sort_56_lnk_Source__Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_56_lnk_Source__Part_v.show(1000,False)
     
-    Sort_56_lnk_Source__Part_v.write.mode("overwrite").saveAsTable("Sort_56_lnk_Source__Part_v")
+    Sort_56_lnk_Source__Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Sort_56_lnk_Source__Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -306,7 +306,7 @@ def Sort_56(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Sort_56_lnk_Source__Part_v=spark.table('Sort_56_lnk_Source__Part_v')
+    Sort_56_lnk_Source__Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Sort_56_lnk_Source__Part_v')
     
     Sort_56_v = Sort_56_lnk_Source__Part_v
     
@@ -316,7 +316,7 @@ def Sort_56(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_56_lnk_Source_v = Sort_56_lnk_Source_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","RTRIM(MI006_MEMB_CUST_AC) AS MI006_MEMB_CUST_AC","rec_no","CNT_CAT_1","CNT_CAT_NOT_1","MAX_RR_DATE_CAT_1","MAX_RR_DATE_CAT_2","RTRIM(ACCT_NO) AS ACCT_NO","RTRIM(SEQ_NO) AS SEQ_NO","RTRIM(RR_TYPE) AS RR_TYPE","RTRIM(RR_REASON) AS RR_REASON","RTRIM(RR_CAT) AS RR_CAT","RTRIM(RR_SUB_CAT) AS RR_SUB_CAT","RTRIM(RR_COUNT) AS RR_COUNT","MP_EXP_DATE","RR_DATE","VIRTUAL_MIA","VIRTUAL_DPD","VIRTUAL_PRIN_ARR","VIRTUAL_INT_ARR","MI006_RNR_REPORTING_FLAG","RTRIM(MI006_PROMPT_PAY_CNT) AS MI006_PROMPT_PAY_CNT","MI006_ORI_RR_DATE","RTRIM(REHABILITAION_FLAG) AS REHABILITAION_FLAG","RR_PROMPT_PAY_CNT","RNR_AMORT_MONTH","RNR_ARR_AMORT_AMT","RTRIM(NPL_MP_EXP_ST) AS NPL_MP_EXP_ST").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'rec_no', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CNT_CAT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CNT_CAT_NOT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MAX_RR_DATE_CAT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MAX_RR_DATE_CAT_2', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'ACCT_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'SEQ_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(6)'}}, {'name': 'RR_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_REASON', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'RR_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_SUB_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_COUNT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'MP_EXP_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_MIA', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_DPD', 'type': 'decimal(5,0)', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_PRIN_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_INT_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_REPORTING_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_PROMPT_PAY_CNT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_ORI_RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REHABILITAION_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_PROMPT_PAY_CNT', 'type': 'decimal(2,0)', 'nullable': True, 'metadata': {}}, {'name': 'RNR_AMORT_MONTH', 'type': 'decimal(3,0)', 'nullable': True, 'metadata': {}}, {'name': 'RNR_ARR_AMORT_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'NPL_MP_EXP_ST', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Sort_56_lnk_Source_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Sort_56_lnk_Source_v PURGE").show()
     
     print("Sort_56_lnk_Source_v")
     
@@ -326,7 +326,7 @@ def Sort_56(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_56_lnk_Source_v.show(1000,False)
     
-    Sort_56_lnk_Source_v.write.mode("overwrite").saveAsTable("Sort_56_lnk_Source_v")
+    Sort_56_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Sort_56_lnk_Source_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -338,11 +338,11 @@ def Transformer_52_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_a
     spark_register_ds_common_functions(spark)
     
     
-    Sort_56_lnk_Source_v=spark.table('Sort_56_lnk_Source_v')
+    Sort_56_lnk_Source_v=spark.table('datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Sort_56_lnk_Source_v')
     
     Transformer_52_lnk_Source_Part_v=Sort_56_lnk_Source_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_52_lnk_Source_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Transformer_52_lnk_Source_Part_v PURGE").show()
     
     print("Transformer_52_lnk_Source_Part_v")
     
@@ -352,7 +352,7 @@ def Transformer_52_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_a
     
     Transformer_52_lnk_Source_Part_v.show(1000,False)
     
-    Transformer_52_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("Transformer_52_lnk_Source_Part_v")
+    Transformer_52_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Transformer_52_lnk_Source_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -364,7 +364,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_52_lnk_Source_Part_v=spark.table('Transformer_52_lnk_Source_Part_v')
+    Transformer_52_lnk_Source_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Transformer_52_lnk_Source_Part_v')
     
     Transformer_52_v = Transformer_52_lnk_Source_Part_v
     
@@ -372,7 +372,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_52_Lnk_RRMD_Tgt_v = Transformer_52_Lnk_RRMD_Tgt_v.selectExpr("B_KEY","RTRIM(MI006_MEMB_CUST_AC) AS MI006_MEMB_CUST_AC","RTRIM(MI006_DISTRESS_STATUS) AS MI006_DISTRESS_STATUS","RTRIM(MI006_NO_OF_RESCHEDULE) AS MI006_NO_OF_RESCHEDULE","RTRIM(MI006_NO_OF_RESTRUCTURE) AS MI006_NO_OF_RESTRUCTURE","MI006_NPL_BFR_RR_DATE","MI006_RE_AGED_DATE","RTRIM(MI006_RESCHEDULE) AS MI006_RESCHEDULE","MI006_RESCHUDLE_DATE","RTRIM(MI006_RESCHUDLE_FLAG) AS MI006_RESCHUDLE_FLAG","RTRIM(MI006_RESTRUCTURE) AS MI006_RESTRUCTURE","MI006_RESTRUCTURE_DATE","RTRIM(MI006_RESTRUCTURE_FLAG) AS MI006_RESTRUCTURE_FLAG","RTRIM(MI006_RR_REASON) AS MI006_RR_REASON","RTRIM(MI006_RESCHEDULE_CODE) AS MI006_RESCHEDULE_CODE","MI006_RESCHEDULE_DATE_TAG","RTRIM(MI006_RR_TYPE) AS MI006_RR_TYPE","RTRIM(MI006_RR_CAT) AS MI006_RR_CAT","MI006_RR_COUNT","RTRIM(MI006_RR_SUB_CAT) AS MI006_RR_SUB_CAT","MI006_RRMD_V_MIA","MI006_RRMD_V_DPD","MI006_RRMD_V_PRIN_ARR","MI006_RRMD_INT_ARR","MI006_RNR_REPORTING_FLAG","RTRIM(MI006_PROMPT_PAY_CNT) AS MI006_PROMPT_PAY_CNT","MI006_ORI_RR_DATE","MI006_RNR_PL_REHAB_FLAG","MI006_RNR_PL_PROMPT_PAY_CNT","MI006_RNR_AMORT_MONTH","MI006_RNR_ARR_AMORT_AMT","MI006_NPL_MP_EXP_ST").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'MI006_DISTRESS_STATUS', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_NO_OF_RESCHEDULE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(5)'}}, {'name': 'MI006_NO_OF_RESTRUCTURE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(5)'}}, {'name': 'MI006_NPL_BFR_RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RE_AGED_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RESCHEDULE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_RESCHUDLE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RESCHUDLE_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_RESTRUCTURE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_RESTRUCTURE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RESTRUCTURE_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_RR_REASON', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_RESCHEDULE_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_RESCHEDULE_DATE_TAG', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RR_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_RR_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_RR_COUNT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RR_SUB_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_RRMD_V_MIA', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RRMD_V_DPD', 'type': 'decimal(5,0)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RRMD_V_PRIN_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RRMD_INT_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_REPORTING_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_PROMPT_PAY_CNT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_ORI_RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_PL_REHAB_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_PL_PROMPT_PAY_CNT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_AMORT_MONTH', 'type': 'decimal(3,0)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_ARR_AMORT_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NPL_MP_EXP_ST', 'type': 'string', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_52_Lnk_RRMD_Tgt_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Transformer_52_Lnk_RRMD_Tgt_v PURGE").show()
     
     print("Transformer_52_Lnk_RRMD_Tgt_v")
     
@@ -382,7 +382,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_52_Lnk_RRMD_Tgt_v.show(1000,False)
     
-    Transformer_52_Lnk_RRMD_Tgt_v.write.mode("overwrite").saveAsTable("Transformer_52_Lnk_RRMD_Tgt_v")
+    Transformer_52_Lnk_RRMD_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Transformer_52_Lnk_RRMD_Tgt_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -394,11 +394,11 @@ def TGT_RRMD_Lnk_RRMD_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_args)
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_52_Lnk_RRMD_Tgt_v=spark.table('Transformer_52_Lnk_RRMD_Tgt_v')
+    Transformer_52_Lnk_RRMD_Tgt_v=spark.table('datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__Transformer_52_Lnk_RRMD_Tgt_v')
     
     TGT_RRMD_Lnk_RRMD_Tgt_Part_v=Transformer_52_Lnk_RRMD_Tgt_v
     
-    spark.sql("DROP TABLE IF EXISTS TGT_RRMD_Lnk_RRMD_Tgt_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__TGT_RRMD_Lnk_RRMD_Tgt_Part_v PURGE").show()
     
     print("TGT_RRMD_Lnk_RRMD_Tgt_Part_v")
     
@@ -408,7 +408,7 @@ def TGT_RRMD_Lnk_RRMD_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_args)
     
     TGT_RRMD_Lnk_RRMD_Tgt_Part_v.show(1000,False)
     
-    TGT_RRMD_Lnk_RRMD_Tgt_Part_v.write.mode("overwrite").saveAsTable("TGT_RRMD_Lnk_RRMD_Tgt_Part_v")
+    TGT_RRMD_Lnk_RRMD_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__TGT_RRMD_Lnk_RRMD_Tgt_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -420,7 +420,7 @@ def TGT_RRMD(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    TGT_RRMD_Lnk_RRMD_Tgt_Part_v=spark.table('TGT_RRMD_Lnk_RRMD_Tgt_Part_v')
+    TGT_RRMD_Lnk_RRMD_Tgt_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_RRMD_Extr_POC__TGT_RRMD_Lnk_RRMD_Tgt_Part_v')
     
     log = logging.getLogger(__name__)
     
@@ -430,7 +430,7 @@ def TGT_RRMD(spark: SparkSession, sc: SparkContext, **kw_args):
     
     log.info("write dataset files to "+locations)
     
-    spark.table("TGT_RRMD_Lnk_RRMD_Tgt_Part_v").write.mode("overwrite").format("parquet").save(locations)
+    TGT_RRMD_Lnk_RRMD_Tgt_Part_v.write.mode("overwrite").format("parquet").save(locations)
     
 
 ####################################[Main]###################################
@@ -438,6 +438,7 @@ import airflow
 with DAG(
     dag_id="job_DBdirect_Mis006_RRMD_Extr_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     

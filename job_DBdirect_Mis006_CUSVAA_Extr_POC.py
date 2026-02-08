@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2026-02-02 22:44:39
+# @Time    : 2026-02-08 14:39:28
 # @Author  : cloudera
 # @File    : job_DBdirect_Mis006_CUSVAA_Extr_POC.py
 # @Copyright: Cloudera.Inc
@@ -232,7 +232,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_x_v = NETZ_SRC_TBL_NM_x_v.selectExpr("RTRIM(KEY_1) AS KEY_1","MI006_NO_OF_GUARANTOR","MI006_BLDVTT_GUA1_NAME","RTRIM(MI006_JOINT_BOR_CIF_NO) AS MI006_JOINT_BOR_CIF_NO","SHORT_NAME","NAME1","RTRIM(INTRO_BROKER_INDIC) AS INTRO_BROKER_INDIC","RTRIM(INTRO_BROKER_NO) AS INTRO_BROKER_NO").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_NO_OF_GUARANTOR', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVTT_GUA1_NAME', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_JOINT_BOR_CIF_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'SHORT_NAME', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'NAME1', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'INTRO_BROKER_INDIC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'INTRO_BROKER_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_TBL_NM_x_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__NETZ_SRC_TBL_NM_x_v PURGE").show()
     
     print("NETZ_SRC_TBL_NM_x_v")
     
@@ -242,7 +242,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_x_v.show(1000,False)
     
-    NETZ_SRC_TBL_NM_x_v.write.mode("overwrite").saveAsTable("NETZ_SRC_TBL_NM_x_v")
+    NETZ_SRC_TBL_NM_x_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__NETZ_SRC_TBL_NM_x_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -254,11 +254,11 @@ def Transformer_52_x_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_TBL_NM_x_v=spark.table('NETZ_SRC_TBL_NM_x_v')
+    NETZ_SRC_TBL_NM_x_v=spark.table('datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__NETZ_SRC_TBL_NM_x_v')
     
     Transformer_52_x_Part_v=NETZ_SRC_TBL_NM_x_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_52_x_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_x_Part_v PURGE").show()
     
     print("Transformer_52_x_Part_v")
     
@@ -268,7 +268,7 @@ def Transformer_52_x_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_52_x_Part_v.show(1000,False)
     
-    Transformer_52_x_Part_v.write.mode("overwrite").saveAsTable("Transformer_52_x_Part_v")
+    Transformer_52_x_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_x_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -280,7 +280,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_52_x_Part_v=spark.table('Transformer_52_x_Part_v')
+    Transformer_52_x_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_x_Part_v')
     
     Transformer_52_v = Transformer_52_x_Part_v
     
@@ -288,7 +288,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_52_Lnk_Cusvaa_Tgt_v = Transformer_52_Lnk_Cusvaa_Tgt_v.selectExpr("B_KEY","MI006_ACSN_SHORT_NAME","MI006_BLDVTT_GUA1_NAME","MI006_JOINT_BOR_CIF_NO","MI006_NO_OF_GUARANTOR","MI006_INTRO_BROKER").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ACSN_SHORT_NAME', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVTT_GUA1_NAME', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_JOINT_BOR_CIF_NO', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_GUARANTOR', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_INTRO_BROKER', 'type': 'decimal(18,0)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_52_Lnk_Cusvaa_Tgt_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_Lnk_Cusvaa_Tgt_v PURGE").show()
     
     print("Transformer_52_Lnk_Cusvaa_Tgt_v")
     
@@ -298,7 +298,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_52_Lnk_Cusvaa_Tgt_v.show(1000,False)
     
-    Transformer_52_Lnk_Cusvaa_Tgt_v.write.mode("overwrite").saveAsTable("Transformer_52_Lnk_Cusvaa_Tgt_v")
+    Transformer_52_Lnk_Cusvaa_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_Lnk_Cusvaa_Tgt_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -310,11 +310,11 @@ def TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_a
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_52_Lnk_Cusvaa_Tgt_v=spark.table('Transformer_52_Lnk_Cusvaa_Tgt_v')
+    Transformer_52_Lnk_Cusvaa_Tgt_v=spark.table('datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_Lnk_Cusvaa_Tgt_v')
     
     TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v=Transformer_52_Lnk_Cusvaa_Tgt_v
     
-    spark.sql("DROP TABLE IF EXISTS TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v PURGE").show()
     
     print("TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v")
     
@@ -324,7 +324,7 @@ def TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_a
     
     TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v.show(1000,False)
     
-    TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v.write.mode("overwrite").saveAsTable("TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v")
+    TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -336,7 +336,7 @@ def TGT_CUSVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v=spark.table('TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v')
+    TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v')
     
     log = logging.getLogger(__name__)
     
@@ -346,7 +346,7 @@ def TGT_CUSVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     log.info("write dataset files to "+locations)
     
-    spark.table("TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v").write.mode("overwrite").format("parquet").save(locations)
+    TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v.write.mode("overwrite").format("parquet").save(locations)
     
 
 ####################################[Main]###################################
@@ -354,6 +354,7 @@ import airflow
 with DAG(
     dag_id="job_DBdirect_Mis006_CUSVAA_Extr_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     

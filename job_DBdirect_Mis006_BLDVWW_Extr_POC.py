@@ -129,7 +129,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source__v = NETZ_SRC_TBL_NM_lnk_Source__v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","RTRIM(MEMB_NO) AS MEMB_NO","CAFM_HIGH_RTE","CAFM_START_RTE_DTE","CAFM_RESET_RTE_DTE","RTRIM(CAFM_TYPE) AS CAFM_TYPE","RTRIM(REPAY_FREQ) AS REPAY_FREQ").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MEMB_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'CAFM_HIGH_RTE', 'type': 'decimal(7,4)', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_START_RTE_DTE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_RESET_RTE_DTE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'REPAY_FREQ', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_TBL_NM_lnk_Source__v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source__v PURGE").show()
     
     print("NETZ_SRC_TBL_NM_lnk_Source__v")
     
@@ -139,7 +139,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source__v.show(1000,False)
     
-    NETZ_SRC_TBL_NM_lnk_Source__v.write.mode("overwrite").saveAsTable("NETZ_SRC_TBL_NM_lnk_Source__v")
+    NETZ_SRC_TBL_NM_lnk_Source__v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source__v")
     
 
 @task
@@ -157,11 +157,11 @@ def Sort_56_lnk_Source__Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_TBL_NM_lnk_Source__v=spark.table('NETZ_SRC_TBL_NM_lnk_Source__v')
+    NETZ_SRC_TBL_NM_lnk_Source__v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source__v')
     
     Sort_56_lnk_Source__Part_v=NETZ_SRC_TBL_NM_lnk_Source__v
     
-    spark.sql("DROP TABLE IF EXISTS Sort_56_lnk_Source__Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Sort_56_lnk_Source__Part_v PURGE").show()
     
     print("Sort_56_lnk_Source__Part_v")
     
@@ -171,7 +171,7 @@ def Sort_56_lnk_Source__Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_56_lnk_Source__Part_v.show(1000,False)
     
-    Sort_56_lnk_Source__Part_v.write.mode("overwrite").saveAsTable("Sort_56_lnk_Source__Part_v")
+    Sort_56_lnk_Source__Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Sort_56_lnk_Source__Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -183,7 +183,7 @@ def Sort_56(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Sort_56_lnk_Source__Part_v=spark.table('Sort_56_lnk_Source__Part_v')
+    Sort_56_lnk_Source__Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Sort_56_lnk_Source__Part_v')
     
     Sort_56_v = Sort_56_lnk_Source__Part_v
     print(Sort_56_v.schema)
@@ -200,7 +200,7 @@ def Sort_56(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_56_lnk_Source_v = Sort_56_lnk_Source_v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","RTRIM(MEMB_NO) AS MEMB_NO","CAFM_HIGH_RTE","CAFM_START_RTE_DTE","CAFM_RESET_RTE_DTE","RTRIM(CAFM_TYPE) AS CAFM_TYPE","RTRIM(REPAY_FREQ) AS REPAY_FREQ","keyChange").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MEMB_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'CAFM_HIGH_RTE', 'type': 'decimal(7,4)', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_START_RTE_DTE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_RESET_RTE_DTE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CAFM_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'REPAY_FREQ', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'keyChange', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Sort_56_lnk_Source_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Sort_56_lnk_Source_v PURGE").show()
     
     print("Sort_56_lnk_Source_v")
     
@@ -210,7 +210,7 @@ def Sort_56(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_56_lnk_Source_v.show(1000,False)
     
-    Sort_56_lnk_Source_v.write.mode("overwrite").saveAsTable("Sort_56_lnk_Source_v")
+    Sort_56_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Sort_56_lnk_Source_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -222,11 +222,11 @@ def Transformer_52_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_a
     spark_register_ds_common_functions(spark)
     
     
-    Sort_56_lnk_Source_v=spark.table('Sort_56_lnk_Source_v')
+    Sort_56_lnk_Source_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Sort_56_lnk_Source_v')
     
     Transformer_52_lnk_Source_Part_v=Sort_56_lnk_Source_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_52_lnk_Source_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Transformer_52_lnk_Source_Part_v PURGE").show()
     
     print("Transformer_52_lnk_Source_Part_v")
     
@@ -236,7 +236,7 @@ def Transformer_52_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_a
     
     Transformer_52_lnk_Source_Part_v.show(1000,False)
     
-    Transformer_52_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("Transformer_52_lnk_Source_Part_v")
+    Transformer_52_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Transformer_52_lnk_Source_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -248,7 +248,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_52_lnk_Source_Part_v=spark.table('Transformer_52_lnk_Source_Part_v')
+    Transformer_52_lnk_Source_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Transformer_52_lnk_Source_Part_v')
     
     Transformer_52_v = Transformer_52_lnk_Source_Part_v
     
@@ -256,7 +256,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_52_Lnk_BLDVWW_Tgt_v = Transformer_52_Lnk_BLDVWW_Tgt_v.selectExpr("B_KEY","MI006_CAFM_HIGH_RTE","MI006_CAFM_RESET_RTE_DTE","RTRIM(MI006_CAFM_TYPE) AS MI006_CAFM_TYPE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CAFM_HIGH_RTE', 'type': 'decimal(8,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CAFM_RESET_RTE_DTE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CAFM_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_52_Lnk_BLDVWW_Tgt_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Transformer_52_Lnk_BLDVWW_Tgt_v PURGE").show()
     
     print("Transformer_52_Lnk_BLDVWW_Tgt_v")
     
@@ -266,7 +266,7 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_52_Lnk_BLDVWW_Tgt_v.show(1000,False)
     
-    Transformer_52_Lnk_BLDVWW_Tgt_v.write.mode("overwrite").saveAsTable("Transformer_52_Lnk_BLDVWW_Tgt_v")
+    Transformer_52_Lnk_BLDVWW_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Transformer_52_Lnk_BLDVWW_Tgt_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -278,11 +278,11 @@ def TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_a
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_52_Lnk_BLDVWW_Tgt_v=spark.table('Transformer_52_Lnk_BLDVWW_Tgt_v')
+    Transformer_52_Lnk_BLDVWW_Tgt_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__Transformer_52_Lnk_BLDVWW_Tgt_v')
     
     TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v=Transformer_52_Lnk_BLDVWW_Tgt_v
     
-    spark.sql("DROP TABLE IF EXISTS TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v PURGE").show()
     
     print("TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v")
     
@@ -292,7 +292,7 @@ def TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_a
     
     TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v.show(1000,False)
     
-    TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v.write.mode("overwrite").saveAsTable("TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v")
+    TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -304,7 +304,7 @@ def TGT_BLDVWW(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v=spark.table('TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v')
+    TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVWW_Extr_POC__TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v')
     
     log = logging.getLogger(__name__)
     
@@ -314,7 +314,7 @@ def TGT_BLDVWW(spark: SparkSession, sc: SparkContext, **kw_args):
     
     log.info("write dataset files to "+locations)
     
-    spark.table("TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v").write.mode("overwrite").format("parquet").save(locations)
+    TGT_BLDVWW_Lnk_BLDVWW_Tgt_Part_v.write.mode("overwrite").format("parquet").save(locations)
     
 
 ####################################[Main]###################################
@@ -322,6 +322,7 @@ import airflow
 with DAG(
     dag_id="job_DBdirect_Mis006_BLDVWW_Extr_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     

@@ -201,6 +201,7 @@ import airflow
 with DAG(
     dag_id="Sub_Seq_DbDirect_MIS006_Seq_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     

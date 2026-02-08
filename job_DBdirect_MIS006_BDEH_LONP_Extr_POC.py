@@ -306,7 +306,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source_v = NETZ_SRC_TBL_NM_lnk_Source_v.selectExpr("RTRIM(KEY_1) AS KEY_1","PROJECTED_FEE","RTRIM(SHIFT_DUE_DT) AS SHIFT_DUE_DT","WORKOUT_DT","TPT_CLAIM_RECEIVED","TPT_CLAIM_REFUND","CCRIS_FCLTY_TYP","MORATORIUM_PERIOD","LAST_PAYMENT_DT","RTRIM(ISLAMIC_CONCEPT) AS ISLAMIC_CONCEPT","GPP_EARNED","ACC_CASH_REBATE","ORIG_REPAY_TERM","LTTR_OFFR_DT","BD_AGREE_DATE","RTRIM(HIRERS_NAME) AS HIRERS_NAME","RTRIM(HIRER_ID_TYPE) AS HIRER_ID_TYPE","RTRIM(HIRER_ID_NO) AS HIRER_ID_NO","WDV_UNEARNED_INT","PROMPT_PAY_REB_PER","RTRIM(ISL_FUNDING_TYPE) AS ISL_FUNDING_TYPE","RTRIM(PAYMENT_CNTR) AS PAYMENT_CNTR","RTRIM(UPFR_CAP_BASIS) AS UPFR_CAP_BASIS","CAP_RATE","RTRIM(ACCT_SOLD_TO) AS ACCT_SOLD_TO","NISBAH_RATE","MI006_CUSTOMER_CCR","MI006_BANK_CCR","MAX_RRMD_SEQ_NO","EFFECT_DATE","EXPIRY_DATE","UNEARNED_INT_REB","ACCRUED_INT","ARREARS_PENALTY","DISCH_AMOUNT","WAIVER_AMT","LEGAL_FEE","ADMIN_FEE","MISC_FEE","SINKING_FUND","PREPAID_AMT","GRACE_PERIOD","PROP_SEC_EXMP_PER","RTRIM(RR_OLD_ACC_DET) AS RR_OLD_ACC_DET","RTRIM(RR_NPL_STATUS) AS RR_NPL_STATUS","RR_WAIVER_AMT","RTRIM(RETAIN_FLAG) AS RETAIN_FLAG","RR_TAG","RR_DT","REC_TAG","REC_DATE","THRES_FLAG","NO_REPHASE_TOTAL","RR_APPL_TAG","RR_APPL_EXP_DT","RTRIM(REASON) AS REASON").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'PROJECTED_FEE', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'SHIFT_DUE_DT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'WORKOUT_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'TPT_CLAIM_RECEIVED', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'TPT_CLAIM_REFUND', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'CCRIS_FCLTY_TYP', 'type': 'decimal(5,0)', 'nullable': True, 'metadata': {}}, {'name': 'MORATORIUM_PERIOD', 'type': 'decimal(2,0)', 'nullable': True, 'metadata': {}}, {'name': 'LAST_PAYMENT_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'ISLAMIC_CONCEPT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'GPP_EARNED', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'ACC_CASH_REBATE', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'ORIG_REPAY_TERM', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'LTTR_OFFR_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BD_AGREE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'HIRERS_NAME', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(60)'}}, {'name': 'HIRER_ID_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'HIRER_ID_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(24)'}}, {'name': 'WDV_UNEARNED_INT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'PROMPT_PAY_REB_PER', 'type': 'decimal(4,2)', 'nullable': True, 'metadata': {}}, {'name': 'ISL_FUNDING_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PAYMENT_CNTR', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'UPFR_CAP_BASIS', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'CAP_RATE', 'type': 'decimal(7,4)', 'nullable': True, 'metadata': {}}, {'name': 'ACCT_SOLD_TO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'NISBAH_RATE', 'type': 'decimal(4,2)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CUSTOMER_CCR', 'type': 'decimal(6,2)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BANK_CCR', 'type': 'decimal(6,2)', 'nullable': True, 'metadata': {}}, {'name': 'MAX_RRMD_SEQ_NO', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'EFFECT_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'EXPIRY_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'UNEARNED_INT_REB', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'ACCRUED_INT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'ARREARS_PENALTY', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'DISCH_AMOUNT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'WAIVER_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'LEGAL_FEE', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'ADMIN_FEE', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'MISC_FEE', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'SINKING_FUND', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'PREPAID_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'GRACE_PERIOD', 'type': 'decimal(3,0)', 'nullable': True, 'metadata': {}}, {'name': 'PROP_SEC_EXMP_PER', 'type': 'decimal(5,2)', 'nullable': True, 'metadata': {}}, {'name': 'RR_OLD_ACC_DET', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(17)'}}, {'name': 'RR_NPL_STATUS', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'RR_WAIVER_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'RETAIN_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_TAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'RR_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REC_TAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'REC_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'THRES_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'NO_REPHASE_TOTAL', 'type': 'decimal(4,0)', 'nullable': True, 'metadata': {}}, {'name': 'RR_APPL_TAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'RR_APPL_EXP_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REASON', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_TBL_NM_lnk_Source_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source_v PURGE").show()
     
     print("NETZ_SRC_TBL_NM_lnk_Source_v")
     
@@ -316,7 +316,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_TBL_NM_lnk_Source_v.show(1000,False)
     
-    NETZ_SRC_TBL_NM_lnk_Source_v.write.mode("overwrite").saveAsTable("NETZ_SRC_TBL_NM_lnk_Source_v")
+    NETZ_SRC_TBL_NM_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source_v")
     
 
 @task
@@ -334,11 +334,11 @@ def TRN_CONVERT_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_TBL_NM_lnk_Source_v=spark.table('NETZ_SRC_TBL_NM_lnk_Source_v')
+    NETZ_SRC_TBL_NM_lnk_Source_v=spark.table('datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source_v')
     
     TRN_CONVERT_lnk_Source_Part_v=NETZ_SRC_TBL_NM_lnk_Source_v
     
-    spark.sql("DROP TABLE IF EXISTS TRN_CONVERT_lnk_Source_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TRN_CONVERT_lnk_Source_Part_v PURGE").show()
     
     print("TRN_CONVERT_lnk_Source_Part_v")
     
@@ -348,7 +348,7 @@ def TRN_CONVERT_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args
     
     TRN_CONVERT_lnk_Source_Part_v.show(1000,False)
     
-    TRN_CONVERT_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("TRN_CONVERT_lnk_Source_Part_v")
+    TRN_CONVERT_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TRN_CONVERT_lnk_Source_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -360,7 +360,7 @@ def TRN_CONVERT(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    TRN_CONVERT_lnk_Source_Part_v=spark.table('TRN_CONVERT_lnk_Source_Part_v')
+    TRN_CONVERT_lnk_Source_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TRN_CONVERT_lnk_Source_Part_v')
     
     TRN_CONVERT_v = TRN_CONVERT_lnk_Source_Part_v
     
@@ -368,7 +368,7 @@ def TRN_CONVERT(spark: SparkSession, sc: SparkContext, **kw_args):
     
     TRN_CONVERT_lnk_BDEH_Tgt_v = TRN_CONVERT_lnk_BDEH_Tgt_v.selectExpr("B_KEY","MI006_BOIS_TPT_CLAIM_RECEIVED","MI006_BOIS_TPT_CLAIM_REFUND","MI006_BOIS_CCRIS_FCLTY_TYP","MI006_BOIS_MORATORIUM_PERIOD","MI006_BOIS_LAST_PAY_DATE","RTRIM(MI006_BOIS_ISLAMIC_CONCEPT) AS MI006_BOIS_ISLAMIC_CONCEPT","MI006_BOIS_GPP_EARNED","MI006_BOIS_ACCUM_PAY_REBATE","MI006_BOIS_ORIGINAL_TERM","MI006_BOIS_LTTR_OFFR_DT","MI006_BOIS_AGREEMENT_DT","MI006_BOIS_HIRER_NAME","MI006_BOIS_HIRER_ID_TYPE","MI006_BOIS_HIRER_ID_NUM","MI006_BOIS_WDV_UNEARNED_INT","MI006_BOIS_PAY_REBATE_RATE","RTRIM(MI006_ISL_FUNDING_TYPE) AS MI006_ISL_FUNDING_TYPE","RTRIM(MI006_BOIS_PAYMENT_COUNTER) AS MI006_BOIS_PAYMENT_COUNTER","RTRIM(MI006_BOIS_UPFRONT_CAP_BASIS) AS MI006_BOIS_UPFRONT_CAP_BASIS","MI006_BOIS_CAP_RATE","MI006_CUSTOMER_CCR","MI006_BANK_CCR","MI006_BORM_NISBAH_RATE","RTRIM(MI006_ACCT_SOLD_TO_E) AS MI006_ACCT_SOLD_TO_E","MI006_AM_ASSEC_TAG_E","MI006_ACCT_SOLD_TO_NAME_E","MI006_BDEH_EFFECT_DATE","MI006_BDEH_EXPIRY_DATE","MI006_BDEH_UNEARNED_INT_REB","MI006_BDEH_ACCRUED_INT","MI006_BDEH_ARREARS_PENALTY","MI006_BDEH_DISCH_AMOUNT","MI006_BDEH_WAIVER_AMT","MI006_BDEH_LEGAL_FEE","MI006_BDEH_ADMIN_FEE","MI006_BDEH_MISC_FEE","MI006_BDEH_SINKING_FUND","MI006_BDEH_PREPAID_AMT","MI006_BOEX_PROP_SEC_EXMP_PER","RTRIM(MI006_RRMD_RR_OLD_ACC_DET) AS MI006_RRMD_RR_OLD_ACC_DET","RTRIM(MI006_RRMD_RR_NPL_STATUS) AS MI006_RRMD_RR_NPL_STATUS","MI006_RRMD_WAIVER_AMT","RTRIM(MI006_RMCD_RETAIN_FLAG) AS MI006_RMCD_RETAIN_FLAG","MI006_ATRP_GRACE_PERIOD","RTRIM(MI006_SHIFT_DUE_DT_FLAG) AS MI006_SHIFT_DUE_DT_FLAG","MI006_PROJECTED_FEES","MI006_BOIS_RR_TAG","MI006_BOIS_RR_DT","MI006_BOIS_REC_TAG","MI006_BOIS_REC_DATE","MI006_BORM_THRES_FLAG","MI006_BORM_NO_REPHASE_TOTAL","MI006_RR_APPL_TAG","MI006_RR_EXP_DT","MI006_WORKOUT_DATE","RTRIM(MI006_BDEH_SETTLEMENT_REASON) AS MI006_BDEH_SETTLEMENT_REASON").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_TPT_CLAIM_RECEIVED', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_TPT_CLAIM_REFUND', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_CCRIS_FCLTY_TYP', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_MORATORIUM_PERIOD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_LAST_PAY_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_ISLAMIC_CONCEPT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_BOIS_GPP_EARNED', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_ACCUM_PAY_REBATE', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_ORIGINAL_TERM', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_LTTR_OFFR_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_AGREEMENT_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_HIRER_NAME', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_HIRER_ID_TYPE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_HIRER_ID_NUM', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_WDV_UNEARNED_INT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_PAY_REBATE_RATE', 'type': 'decimal(5,2)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ISL_FUNDING_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_BOIS_PAYMENT_COUNTER', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_BOIS_UPFRONT_CAP_BASIS', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_BOIS_CAP_RATE', 'type': 'decimal(7,4)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CUSTOMER_CCR', 'type': 'decimal(6,2)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BANK_CCR', 'type': 'decimal(6,2)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_NISBAH_RATE', 'type': 'decimal(4,2)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ACCT_SOLD_TO_E', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_AM_ASSEC_TAG_E', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ACCT_SOLD_TO_NAME_E', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_EFFECT_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_EXPIRY_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_UNEARNED_INT_REB', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_ACCRUED_INT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_ARREARS_PENALTY', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_DISCH_AMOUNT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_WAIVER_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_LEGAL_FEE', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_ADMIN_FEE', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_MISC_FEE', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_SINKING_FUND', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_PREPAID_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOEX_PROP_SEC_EXMP_PER', 'type': 'decimal(6,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RRMD_RR_OLD_ACC_DET', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(17)'}}, {'name': 'MI006_RRMD_RR_NPL_STATUS', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_RRMD_WAIVER_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RMCD_RETAIN_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_ATRP_GRACE_PERIOD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_SHIFT_DUE_DT_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_PROJECTED_FEES', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_RR_TAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_RR_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_REC_TAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BOIS_REC_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_THRES_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_NO_REPHASE_TOTAL', 'type': 'decimal(4,0)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RR_APPL_TAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RR_EXP_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_WORKOUT_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BDEH_SETTLEMENT_REASON', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS TRN_CONVERT_lnk_BDEH_Tgt_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TRN_CONVERT_lnk_BDEH_Tgt_v PURGE").show()
     
     print("TRN_CONVERT_lnk_BDEH_Tgt_v")
     
@@ -378,7 +378,7 @@ def TRN_CONVERT(spark: SparkSession, sc: SparkContext, **kw_args):
     
     TRN_CONVERT_lnk_BDEH_Tgt_v.show(1000,False)
     
-    TRN_CONVERT_lnk_BDEH_Tgt_v.write.mode("overwrite").saveAsTable("TRN_CONVERT_lnk_BDEH_Tgt_v")
+    TRN_CONVERT_lnk_BDEH_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TRN_CONVERT_lnk_BDEH_Tgt_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -390,11 +390,11 @@ def TGT_BDEH_LONP_lnk_BDEH_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_
     spark_register_ds_common_functions(spark)
     
     
-    TRN_CONVERT_lnk_BDEH_Tgt_v=spark.table('TRN_CONVERT_lnk_BDEH_Tgt_v')
+    TRN_CONVERT_lnk_BDEH_Tgt_v=spark.table('datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TRN_CONVERT_lnk_BDEH_Tgt_v')
     
     TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v=TRN_CONVERT_lnk_BDEH_Tgt_v
     
-    spark.sql("DROP TABLE IF EXISTS TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v PURGE").show()
     
     print("TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v")
     
@@ -404,7 +404,7 @@ def TGT_BDEH_LONP_lnk_BDEH_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_
     
     TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v.show(1000,False)
     
-    TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v.write.mode("overwrite").saveAsTable("TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v")
+    TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -416,7 +416,7 @@ def TGT_BDEH_LONP(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v=spark.table('TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v')
+    TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_BDEH_LONP_Extr_POC__TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v')
     
     log = logging.getLogger(__name__)
     
@@ -426,7 +426,7 @@ def TGT_BDEH_LONP(spark: SparkSession, sc: SparkContext, **kw_args):
     
     log.info("write dataset files to "+locations)
     
-    spark.table("TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v").write.mode("overwrite").format("parquet").save(locations)
+    TGT_BDEH_LONP_lnk_BDEH_Tgt_Part_v.write.mode("overwrite").format("parquet").save(locations)
     
 
 ####################################[Main]###################################
@@ -434,6 +434,7 @@ import airflow
 with DAG(
     dag_id="job_DBdirect_MIS006_BDEH_LONP_Extr_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     

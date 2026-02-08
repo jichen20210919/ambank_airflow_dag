@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2026-02-02 22:43:51
+# @Time    : 2026-02-08 14:39:21
 # @Author  : cloudera
 # @File    : job_DBdirect_MIS006_CHPM_Extr_POC.py
 # @Copyright: Cloudera.Inc
@@ -198,7 +198,7 @@ def NETZ_SRC_BORM_BOAF(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_BORM_BOAF_lnk_Source_v = NETZ_SRC_BORM_BOAF_lnk_Source_v.selectExpr("B_KEY","MI006_ARRS_INT_1","MI006_BRTH_EFF_DATE","MI006_REASON_CD","DUEC","DUET","MI006_BORM_RM_CODE","RTRIM(MI006_BORH_REBATE_PERC) AS MI006_BORH_REBATE_PERC","MI006_BORM_ARR_INT_INCR","R","T","REC_NO").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ARRS_INT_1', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BRTH_EFF_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REASON_CD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'DUEC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'DUET', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_RM_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORH_REBATE_PERC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BORM_ARR_INT_INCR', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'R', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'T', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REC_NO', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_BORM_BOAF_lnk_Source_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_BORM_BOAF_lnk_Source_v PURGE").show()
     
     print("NETZ_SRC_BORM_BOAF_lnk_Source_v")
     
@@ -208,7 +208,7 @@ def NETZ_SRC_BORM_BOAF(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_BORM_BOAF_lnk_Source_v.show(1000,False)
     
-    NETZ_SRC_BORM_BOAF_lnk_Source_v.write.mode("overwrite").saveAsTable("NETZ_SRC_BORM_BOAF_lnk_Source_v")
+    NETZ_SRC_BORM_BOAF_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_BORM_BOAF_lnk_Source_v")
     
 
 @task
@@ -424,7 +424,7 @@ def NETZ_SRC_COLM_CHPM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_COLM_CHPM_Colm_v = NETZ_SRC_COLM_CHPM_Colm_v.selectExpr("B_KEY","MI006_DESCRIPTION","MI006_CLASSIFIED_DATE","MI006_GUA_CUSTO_NO","RTRIM(MI006_AMORT_FLAG) AS MI006_AMORT_FLAG","MI006_ZECT_HANDLING_FEE","MI006_ZECT_OTHER_FEE","MI006_ZECT_EXP_HANDLING_AMT","MI006_RIGH_NPL_COUNTER","MI006_RIGH_PL_DATE","MI006_ZECT_INPUTTAXNC1").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_DESCRIPTION', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CLASSIFIED_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_GUA_CUSTO_NO', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_AMORT_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_ZECT_HANDLING_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_OTHER_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_EXP_HANDLING_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_NPL_COUNTER', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_PL_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_INPUTTAXNC1', 'type': 'decimal(20,5)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_COLM_CHPM_Colm_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_COLM_CHPM_Colm_v PURGE").show()
     
     print("NETZ_SRC_COLM_CHPM_Colm_v")
     
@@ -434,7 +434,7 @@ def NETZ_SRC_COLM_CHPM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_COLM_CHPM_Colm_v.show(1000,False)
     
-    NETZ_SRC_COLM_CHPM_Colm_v.write.mode("overwrite").saveAsTable("NETZ_SRC_COLM_CHPM_Colm_v")
+    NETZ_SRC_COLM_CHPM_Colm_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_COLM_CHPM_Colm_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -510,7 +510,7 @@ def NETZ_SRC_BLDVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_BLDVAA_Colt_v = NETZ_SRC_BLDVAA_Colt_v.selectExpr("B_KEY","RTRIM(MI006_NO_OF_DISB_ON_NOTE) AS MI006_NO_OF_DISB_ON_NOTE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DISB_ON_NOTE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_BLDVAA_Colt_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_BLDVAA_Colt_v PURGE").show()
     
     print("NETZ_SRC_BLDVAA_Colt_v")
     
@@ -520,7 +520,7 @@ def NETZ_SRC_BLDVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_BLDVAA_Colt_v.show(1000,False)
     
-    NETZ_SRC_BLDVAA_Colt_v.write.mode("overwrite").saveAsTable("NETZ_SRC_BLDVAA_Colt_v")
+    NETZ_SRC_BLDVAA_Colt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_BLDVAA_Colt_v")
     
 
 @task
@@ -672,7 +672,7 @@ def NETZ_SRC_Zect(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_Zect_Zect_v = NETZ_SRC_Zect_Zect_v.selectExpr("B_KEY","MI006_ZECT_OTHER_FEE_sum").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_OTHER_FEE_sum', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS NETZ_SRC_Zect_Zect_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_Zect_Zect_v PURGE").show()
     
     print("NETZ_SRC_Zect_Zect_v")
     
@@ -682,7 +682,7 @@ def NETZ_SRC_Zect(spark: SparkSession, sc: SparkContext, **kw_args):
     
     NETZ_SRC_Zect_Zect_v.show(1000,False)
     
-    NETZ_SRC_Zect_Zect_v.write.mode("overwrite").saveAsTable("NETZ_SRC_Zect_Zect_v")
+    NETZ_SRC_Zect_Zect_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_Zect_Zect_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -694,11 +694,11 @@ def Transformer_J_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_ar
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_BORM_BOAF_lnk_Source_v=spark.table('NETZ_SRC_BORM_BOAF_lnk_Source_v')
+    NETZ_SRC_BORM_BOAF_lnk_Source_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_BORM_BOAF_lnk_Source_v')
     
     Transformer_J_lnk_Source_Part_v=NETZ_SRC_BORM_BOAF_lnk_Source_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_J_lnk_Source_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_J_lnk_Source_Part_v PURGE").show()
     
     print("Transformer_J_lnk_Source_Part_v")
     
@@ -708,7 +708,7 @@ def Transformer_J_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_ar
     
     Transformer_J_lnk_Source_Part_v.show(1000,False)
     
-    Transformer_J_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("Transformer_J_lnk_Source_Part_v")
+    Transformer_J_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_J_lnk_Source_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -720,11 +720,11 @@ def Join_18_Colm_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_COLM_CHPM_Colm_v=spark.table('NETZ_SRC_COLM_CHPM_Colm_v')
+    NETZ_SRC_COLM_CHPM_Colm_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_COLM_CHPM_Colm_v')
     
     Join_18_Colm_Part_v=NETZ_SRC_COLM_CHPM_Colm_v
     
-    spark.sql("DROP TABLE IF EXISTS Join_18_Colm_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Colm_Part_v PURGE").show()
     
     print("Join_18_Colm_Part_v")
     
@@ -734,7 +734,7 @@ def Join_18_Colm_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Join_18_Colm_Part_v.show(1000,False)
     
-    Join_18_Colm_Part_v.write.mode("overwrite").saveAsTable("Join_18_Colm_Part_v")
+    Join_18_Colm_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Colm_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -746,11 +746,11 @@ def Join_18_Colt_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_BLDVAA_Colt_v=spark.table('NETZ_SRC_BLDVAA_Colt_v')
+    NETZ_SRC_BLDVAA_Colt_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_BLDVAA_Colt_v')
     
     Join_18_Colt_Part_v=NETZ_SRC_BLDVAA_Colt_v
     
-    spark.sql("DROP TABLE IF EXISTS Join_18_Colt_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Colt_Part_v PURGE").show()
     
     print("Join_18_Colt_Part_v")
     
@@ -760,7 +760,7 @@ def Join_18_Colt_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Join_18_Colt_Part_v.show(1000,False)
     
-    Join_18_Colt_Part_v.write.mode("overwrite").saveAsTable("Join_18_Colt_Part_v")
+    Join_18_Colt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Colt_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -772,11 +772,11 @@ def Join_18_Zect_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    NETZ_SRC_Zect_Zect_v=spark.table('NETZ_SRC_Zect_Zect_v')
+    NETZ_SRC_Zect_Zect_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__NETZ_SRC_Zect_Zect_v')
     
     Join_18_Zect_Part_v=NETZ_SRC_Zect_Zect_v
     
-    spark.sql("DROP TABLE IF EXISTS Join_18_Zect_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Zect_Part_v PURGE").show()
     
     print("Join_18_Zect_Part_v")
     
@@ -786,7 +786,7 @@ def Join_18_Zect_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Join_18_Zect_Part_v.show(1000,False)
     
-    Join_18_Zect_Part_v.write.mode("overwrite").saveAsTable("Join_18_Zect_Part_v")
+    Join_18_Zect_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Zect_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -798,7 +798,7 @@ def Transformer_J(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_J_lnk_Source_Part_v=spark.table('Transformer_J_lnk_Source_Part_v')
+    Transformer_J_lnk_Source_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_J_lnk_Source_Part_v')
     # 1. Define the Window (Equivalent to the Sort/Partition in DS)
     # DataStage sorted by B_KEY and REC_NO
     window_spec = Window.partitionBy("B_KEY").orderBy("REC_NO")
@@ -847,7 +847,7 @@ def Transformer_J(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_J_Remove_Dupe_v = Transformer_J_Remove_Dupe_v.selectExpr("B_KEY","MI006_ARRS_INT_1","MI006_BRTH_EFF_DATE","MI006_REASON_CD","DUEC","DUET","MI006_BORM_RM_CODE","RTRIM(MI006_BORH_REBATE_PERC) AS MI006_BORH_REBATE_PERC","MI006_BORM_ARR_INT_INCR","MI006_NO_OF_DUES_BOAF","MI006_BILLED_AMT_UNPD_BOAF").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ARRS_INT_1', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BRTH_EFF_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REASON_CD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'DUEC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'DUET', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_RM_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORH_REBATE_PERC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BORM_ARR_INT_INCR', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DUES_BOAF', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BILLED_AMT_UNPD_BOAF', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_J_Remove_Dupe_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_J_Remove_Dupe_v PURGE").show()
     
     print("Transformer_J_Remove_Dupe_v")
     
@@ -857,7 +857,7 @@ def Transformer_J(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_J_Remove_Dupe_v.show(1000,False)
     
-    Transformer_J_Remove_Dupe_v.write.mode("overwrite").saveAsTable("Transformer_J_Remove_Dupe_v")
+    Transformer_J_Remove_Dupe_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_J_Remove_Dupe_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -869,11 +869,11 @@ def Join_18_Remove_Dupe_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_J_Remove_Dupe_v=spark.table('Transformer_J_Remove_Dupe_v')
+    Transformer_J_Remove_Dupe_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_J_Remove_Dupe_v')
     
     Join_18_Remove_Dupe_Part_v=Transformer_J_Remove_Dupe_v
     
-    spark.sql("DROP TABLE IF EXISTS Join_18_Remove_Dupe_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Remove_Dupe_Part_v PURGE").show()
     
     print("Join_18_Remove_Dupe_Part_v")
     
@@ -883,7 +883,7 @@ def Join_18_Remove_Dupe_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Join_18_Remove_Dupe_Part_v.show(1000,False)
     
-    Join_18_Remove_Dupe_Part_v.write.mode("overwrite").saveAsTable("Join_18_Remove_Dupe_Part_v")
+    Join_18_Remove_Dupe_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Remove_Dupe_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -895,13 +895,13 @@ def Join_18(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Join_18_Colt_Part_v=spark.table('Join_18_Colt_Part_v')
+    Join_18_Colt_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Colt_Part_v')
     
-    Join_18_Colm_Part_v=spark.table('Join_18_Colm_Part_v')
+    Join_18_Colm_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Colm_Part_v')
     
-    Join_18_Remove_Dupe_Part_v=spark.table('Join_18_Remove_Dupe_Part_v')
+    Join_18_Remove_Dupe_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Remove_Dupe_Part_v')
     
-    Join_18_Zect_Part_v=spark.table('Join_18_Zect_Part_v')
+    Join_18_Zect_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_Zect_Part_v')
     
     print(Join_18_Colt_Part_v.schema)
     print(Join_18_Colm_Part_v.schema)
@@ -914,7 +914,7 @@ def Join_18(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Join_18_DSLink22_v = Join_18_DSLink22_v.selectExpr("B_KEY","MI006_ARRS_INT_1","MI006_BRTH_EFF_DATE","MI006_REASON_CD","DUEC","DUET","MI006_BORM_RM_CODE","RTRIM(MI006_BORH_REBATE_PERC) AS MI006_BORH_REBATE_PERC","MI006_BORM_ARR_INT_INCR","RTRIM(MI006_NO_OF_DISB_ON_NOTE) AS MI006_NO_OF_DISB_ON_NOTE","MI006_DESCRIPTION","MI006_CLASSIFIED_DATE","MI006_GUA_CUSTO_NO","RTRIM(MI006_AMORT_FLAG) AS MI006_AMORT_FLAG","MI006_ZECT_HANDLING_FEE","MI006_ZECT_OTHER_FEE","MI006_ZECT_EXP_HANDLING_AMT","MI006_NO_OF_DUES_BOAF","MI006_BILLED_AMT_UNPD_BOAF","MI006_RIGH_NPL_COUNTER","MI006_RIGH_PL_DATE","MI006_ZECT_INPUTTAXNC1").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ARRS_INT_1', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BRTH_EFF_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REASON_CD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'DUEC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'DUET', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_RM_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORH_REBATE_PERC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BORM_ARR_INT_INCR', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DISB_ON_NOTE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_DESCRIPTION', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CLASSIFIED_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_GUA_CUSTO_NO', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_AMORT_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_ZECT_HANDLING_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_OTHER_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_EXP_HANDLING_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DUES_BOAF', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BILLED_AMT_UNPD_BOAF', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_NPL_COUNTER', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_PL_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_INPUTTAXNC1', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Join_18_DSLink22_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_DSLink22_v PURGE").show()
     
     print("Join_18_DSLink22_v")
     
@@ -924,7 +924,7 @@ def Join_18(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Join_18_DSLink22_v.show(1000,False)
     
-    Join_18_DSLink22_v.write.mode("overwrite").saveAsTable("Join_18_DSLink22_v")
+    Join_18_DSLink22_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_DSLink22_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -936,11 +936,11 @@ def Transformer_24_DSLink22_Part(spark: SparkSession, sc: SparkContext, **kw_arg
     spark_register_ds_common_functions(spark)
     
     
-    Join_18_DSLink22_v=spark.table('Join_18_DSLink22_v')
+    Join_18_DSLink22_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Join_18_DSLink22_v')
     
     Transformer_24_DSLink22_Part_v=Join_18_DSLink22_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_24_DSLink22_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_24_DSLink22_Part_v PURGE").show()
     
     print("Transformer_24_DSLink22_Part_v")
     
@@ -950,7 +950,7 @@ def Transformer_24_DSLink22_Part(spark: SparkSession, sc: SparkContext, **kw_arg
     
     Transformer_24_DSLink22_Part_v.show(1000,False)
     
-    Transformer_24_DSLink22_Part_v.write.mode("overwrite").saveAsTable("Transformer_24_DSLink22_Part_v")
+    Transformer_24_DSLink22_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_24_DSLink22_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -962,7 +962,7 @@ def Transformer_24(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_24_DSLink22_Part_v=spark.table('Transformer_24_DSLink22_Part_v')
+    Transformer_24_DSLink22_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_24_DSLink22_Part_v')
     
     Transformer_24_v = Transformer_24_DSLink22_Part_v
     
@@ -970,7 +970,7 @@ def Transformer_24(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_24_lnk_CHPM_Tgt_v = Transformer_24_lnk_CHPM_Tgt_v.selectExpr("B_KEY","MI006_ARRS_INT_1","MI006_BRTH_EFF_DATE","MI006_REASON_CD","MI006_BORM_RM_CODE","RTRIM(MI006_BORH_REBATE_PERC) AS MI006_BORH_REBATE_PERC","MI006_BORM_ARR_INT_INCR","RTRIM(MI006_NO_OF_DISB_ON_NOTE) AS MI006_NO_OF_DISB_ON_NOTE","MI006_DESCRIPTION","MI006_CLASSIFIED_DATE","MI006_GUA_CUSTO_NO","RTRIM(MI006_AMORT_FLAG) AS MI006_AMORT_FLAG","MI006_ZECT_HANDLING_FEE","MI006_ZECT_OTHER_FEE","MI006_ZECT_EXP_HANDLING_AMT","MI006_NPL_CLASS_DATE","MI006_AM_NPL_DATE","RTRIM(MI006_NO_OF_DUES_BOAF) AS MI006_NO_OF_DUES_BOAF","MI006_BILLED_AMT_UNPD_BOAF","MI006_RIGH_NPL_COUNTER","MI006_RIGH_PL_DATE","MI006_ZECT_INPUTTAXNC1").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ARRS_INT_1', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BRTH_EFF_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REASON_CD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_RM_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORH_REBATE_PERC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BORM_ARR_INT_INCR', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DISB_ON_NOTE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_DESCRIPTION', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CLASSIFIED_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_GUA_CUSTO_NO', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_AMORT_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_ZECT_HANDLING_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_OTHER_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_EXP_HANDLING_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NPL_CLASS_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_AM_NPL_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DUES_BOAF', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BILLED_AMT_UNPD_BOAF', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_NPL_COUNTER', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_PL_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_INPUTTAXNC1', 'type': 'decimal(20,5)', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_24_lnk_CHPM_Tgt_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_24_lnk_CHPM_Tgt_v PURGE").show()
     
     print("Transformer_24_lnk_CHPM_Tgt_v")
     
@@ -980,7 +980,7 @@ def Transformer_24(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_24_lnk_CHPM_Tgt_v.show(1000,False)
     
-    Transformer_24_lnk_CHPM_Tgt_v.write.mode("overwrite").saveAsTable("Transformer_24_lnk_CHPM_Tgt_v")
+    Transformer_24_lnk_CHPM_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_24_lnk_CHPM_Tgt_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -992,11 +992,11 @@ def DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part(spark: SparkSession, sc: SparkContext, **
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_24_lnk_CHPM_Tgt_v=spark.table('Transformer_24_lnk_CHPM_Tgt_v')
+    Transformer_24_lnk_CHPM_Tgt_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__Transformer_24_lnk_CHPM_Tgt_v')
     
     DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v=Transformer_24_lnk_CHPM_Tgt_v
     
-    spark.sql("DROP TABLE IF EXISTS DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v PURGE").show()
     
     print("DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v")
     
@@ -1006,7 +1006,7 @@ def DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part(spark: SparkSession, sc: SparkContext, **
     
     DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v.show(1000,False)
     
-    DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v.write.mode("overwrite").saveAsTable("DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v")
+    DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -1018,7 +1018,7 @@ def DS_TGT_CHPM_COLT(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v=spark.table('DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v')
+    DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_CHPM_Extr_POC__DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v')
     
     log = logging.getLogger(__name__)
     
@@ -1028,7 +1028,7 @@ def DS_TGT_CHPM_COLT(spark: SparkSession, sc: SparkContext, **kw_args):
     
     log.info("write dataset files to "+locations)
     
-    spark.table("DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v").write.mode("overwrite").format("parquet").save(locations)
+    DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part_v.write.mode("overwrite").format("parquet").save(locations)
     
 
 ####################################[Main]###################################
@@ -1036,6 +1036,7 @@ import airflow
 with DAG(
     dag_id="job_DBdirect_MIS006_CHPM_Extr_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     

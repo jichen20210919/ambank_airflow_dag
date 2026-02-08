@@ -186,8 +186,12 @@ def ds_count(string, substring):
 def ds_field(string, delimiter:str, occurrence, num_substr=1):
     if string is None :
         return None
-    if delimiter is None or occurrence is None or num_substr is None:
-        raise ValueError("Delimiter, occurrence, and num_substr cannot be null")
+    if delimiter is None:
+        delimiter = ','
+    if occurrence is None:
+        occurrence  = 1
+    if num_substr is None:
+        num_substr = 1
 
     if occurrence < 1:
         occurrence = 1

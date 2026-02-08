@@ -210,7 +210,7 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     
     BORM_X_BLDVNN_lnk_Source_v = BORM_X_BLDVNN_lnk_Source_v.selectExpr("CURR_DATE","B_KEY","START_DATE_X","REPAYMENT_X","HEX_KEY","RNK","START_DATE_01","REPAYMENT_01","RTRIM(REPAYMENT_TYPE_01) AS REPAYMENT_TYPE_01","PRINC_DUE_01","INSUR_AMT_DUE_01","POST_DATE","BALANCE_01","CREDIT_ARREARS","CIV_ACT_COD_DAT","LEGAL_MARKER_FLAG","RTRIM(CIV_ACT_CODE) AS CIV_ACT_CODE","RTRIM(LGL_TAG) AS LGL_TAG","LGL_TAG_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'CURR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'HEX_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'RNK', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_01', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_TYPE_01', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PRINC_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'INSUR_AMT_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'POST_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BALANCE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'CREDIT_ARREARS', 'type': 'decimal(17,5)', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_COD_DAT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'LEGAL_MARKER_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'LGL_TAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'LGL_TAG_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS BORM_X_BLDVNN_lnk_Source_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__BORM_X_BLDVNN_lnk_Source_v PURGE").show()
     
     print("BORM_X_BLDVNN_lnk_Source_v")
     
@@ -220,7 +220,7 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     
     BORM_X_BLDVNN_lnk_Source_v.show(1000,False)
     
-    BORM_X_BLDVNN_lnk_Source_v.write.mode("overwrite").saveAsTable("BORM_X_BLDVNN_lnk_Source_v")
+    BORM_X_BLDVNN_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__BORM_X_BLDVNN_lnk_Source_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -232,11 +232,11 @@ def Sort_142_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    BORM_X_BLDVNN_lnk_Source_v=spark.table('BORM_X_BLDVNN_lnk_Source_v')
+    BORM_X_BLDVNN_lnk_Source_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__BORM_X_BLDVNN_lnk_Source_v')
     
     Sort_142_lnk_Source_Part_v=BORM_X_BLDVNN_lnk_Source_v
     
-    spark.sql("DROP TABLE IF EXISTS Sort_142_lnk_Source_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_lnk_Source_Part_v PURGE").show()
     
     print("Sort_142_lnk_Source_Part_v")
     
@@ -246,7 +246,7 @@ def Sort_142_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_142_lnk_Source_Part_v.show(1000,False)
     
-    Sort_142_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("Sort_142_lnk_Source_Part_v")
+    Sort_142_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_lnk_Source_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -258,7 +258,7 @@ def Sort_142(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Sort_142_lnk_Source_Part_v=spark.table('Sort_142_lnk_Source_Part_v')
+    Sort_142_lnk_Source_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_lnk_Source_Part_v')
     
     Sort_142_v = Sort_142_lnk_Source_Part_v
     
@@ -268,7 +268,7 @@ def Sort_142(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_142_DSLink148X_v = Sort_142_DSLink148X_v.selectExpr("CURR_DATE","B_KEY","START_DATE_X","REPAYMENT_X","HEX_KEY","RNK","START_DATE_01","REPAYMENT_01","RTRIM(REPAYMENT_TYPE_01) AS REPAYMENT_TYPE_01","PRINC_DUE_01","INSUR_AMT_DUE_01","POST_DATE","BALANCE_01","CREDIT_ARREARS","CIV_ACT_COD_DAT","LEGAL_MARKER_FLAG","RTRIM(CIV_ACT_CODE) AS CIV_ACT_CODE","RTRIM(LGL_TAG) AS LGL_TAG","LGL_TAG_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'CURR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'HEX_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'RNK', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_01', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_TYPE_01', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PRINC_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'INSUR_AMT_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'POST_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BALANCE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'CREDIT_ARREARS', 'type': 'decimal(17,5)', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_COD_DAT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'LEGAL_MARKER_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'LGL_TAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'LGL_TAG_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Sort_142_DSLink148X_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_DSLink148X_v PURGE").show()
     
     print("Sort_142_DSLink148X_v")
     
@@ -278,7 +278,7 @@ def Sort_142(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Sort_142_DSLink148X_v.show(1000,False)
     
-    Sort_142_DSLink148X_v.write.mode("overwrite").saveAsTable("Sort_142_DSLink148X_v")
+    Sort_142_DSLink148X_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_DSLink148X_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -290,11 +290,11 @@ def Copy_227_DSLink148X_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Sort_142_DSLink148X_v=spark.table('Sort_142_DSLink148X_v')
+    Sort_142_DSLink148X_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_DSLink148X_v')
     
     Copy_227_DSLink148X_Part_v=Sort_142_DSLink148X_v
     
-    spark.sql("DROP TABLE IF EXISTS Copy_227_DSLink148X_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148X_Part_v PURGE").show()
     
     print("Copy_227_DSLink148X_Part_v")
     
@@ -304,7 +304,7 @@ def Copy_227_DSLink148X_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Copy_227_DSLink148X_Part_v.show(1000,False)
     
-    Copy_227_DSLink148X_Part_v.write.mode("overwrite").saveAsTable("Copy_227_DSLink148X_Part_v")
+    Copy_227_DSLink148X_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148X_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -316,7 +316,7 @@ def Copy_227(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Copy_227_DSLink148X_Part_v=spark.table('Copy_227_DSLink148X_Part_v')
+    Copy_227_DSLink148X_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148X_Part_v')
     
     Copy_227_v=Copy_227_DSLink148X_Part_v
     
@@ -324,7 +324,7 @@ def Copy_227(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Copy_227_DSLink148_v = Copy_227_DSLink148_v.selectExpr("CURR_DATE","B_KEY","START_DATE_X","REPAYMENT_X","HEX_KEY","RNK","START_DATE_01","REPAYMENT_01","RTRIM(REPAYMENT_TYPE_01) AS REPAYMENT_TYPE_01","PRINC_DUE_01","INSUR_AMT_DUE_01","POST_DATE","BALANCE_01","CREDIT_ARREARS","CIV_ACT_COD_DAT","LEGAL_MARKER_FLAG","RTRIM(CIV_ACT_CODE) AS CIV_ACT_CODE","RTRIM(LGL_TAG) AS LGL_TAG","LGL_TAG_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'CURR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'HEX_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'RNK', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_01', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_TYPE_01', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PRINC_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'INSUR_AMT_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'POST_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BALANCE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'CREDIT_ARREARS', 'type': 'decimal(17,5)', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_COD_DAT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'LEGAL_MARKER_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'LGL_TAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'LGL_TAG_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Copy_227_DSLink148_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148_v PURGE").show()
     
     print("Copy_227_DSLink148_v")
     
@@ -334,7 +334,7 @@ def Copy_227(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Copy_227_DSLink148_v.show(1000,False)
     
-    Copy_227_DSLink148_v.write.mode("overwrite").saveAsTable("Copy_227_DSLink148_v")
+    Copy_227_DSLink148_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -346,11 +346,11 @@ def Copy_of_Transformer_149_DSLink148_Part(spark: SparkSession, sc: SparkContext
     spark_register_ds_common_functions(spark)
     
     
-    Copy_227_DSLink148_v=spark.table('Copy_227_DSLink148_v')
+    Copy_227_DSLink148_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148_v')
     
     Copy_of_Transformer_149_DSLink148_Part_v=Copy_227_DSLink148_v
     
-    spark.sql("DROP TABLE IF EXISTS Copy_of_Transformer_149_DSLink148_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink148_Part_v PURGE").show()
     
     print("Copy_of_Transformer_149_DSLink148_Part_v")
     
@@ -360,7 +360,7 @@ def Copy_of_Transformer_149_DSLink148_Part(spark: SparkSession, sc: SparkContext
     
     Copy_of_Transformer_149_DSLink148_Part_v.show(1000,False)
     
-    Copy_of_Transformer_149_DSLink148_Part_v.write.mode("overwrite").saveAsTable("Copy_of_Transformer_149_DSLink148_Part_v")
+    Copy_of_Transformer_149_DSLink148_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink148_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -372,7 +372,8 @@ def Copy_of_Transformer_149(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Copy_of_Transformer_149_DSLink148_Part_v=spark.table('Copy_of_Transformer_149_DSLink148_Part_v')
+    Copy_of_Transformer_149_DSLink148_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink148_Part_v')
+
     # 1. Setup the Grouping and History Collection
     # Replicates StageVars: C, F, COL, SD, RT, REP, BAL
     df_grouped = Copy_of_Transformer_149_DSLink148_Part_v.groupBy("B_KEY").agg(
@@ -491,7 +492,7 @@ def Copy_of_Transformer_149(spark: SparkSession, sc: SparkContext, **kw_args):
 
     Copy_of_Transformer_149_DSLink151_v = Copy_of_Transformer_149_DSLink151_v.selectExpr("B_KEY","START_DATE_X","REPAYMENT_X","START_DATE_01","REPAYMENT_01","RTRIM(REPAYMENT_TYPE_01) AS REPAYMENT_TYPE_01","PRINC_DUE_01","INSUR_AMT_DUE_01","POST_DATE","BALANCE_01","LAST_PAY_DATE_X","NEXT_DUE_DATE_X","CIV_ACT_COD_DAT","LEGAL_MARKER_FLAG","RTRIM(CIV_ACT_CODE) AS CIV_ACT_CODE","RTRIM(LGL_TAG) AS LGL_TAG","LGL_TAG_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_X', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_X', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_01', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_TYPE_01', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PRINC_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'INSUR_AMT_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'POST_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BALANCE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'LAST_PAY_DATE_X', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'NEXT_DUE_DATE_X', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_COD_DAT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'LEGAL_MARKER_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'LGL_TAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'LGL_TAG_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Copy_of_Transformer_149_DSLink151_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink151_v PURGE").show()
     
     print("Copy_of_Transformer_149_DSLink151_v")
     
@@ -501,7 +502,7 @@ def Copy_of_Transformer_149(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Copy_of_Transformer_149_DSLink151_v.show(1000,False)
     
-    Copy_of_Transformer_149_DSLink151_v.write.mode("overwrite").saveAsTable("Copy_of_Transformer_149_DSLink151_v")
+    Copy_of_Transformer_149_DSLink151_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink151_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -513,11 +514,11 @@ def Transformer_241_DSLink151_Part(spark: SparkSession, sc: SparkContext, **kw_a
     spark_register_ds_common_functions(spark)
     
     
-    Copy_of_Transformer_149_DSLink151_v=spark.table('Copy_of_Transformer_149_DSLink151_v')
+    Copy_of_Transformer_149_DSLink151_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink151_v')
     
     Transformer_241_DSLink151_Part_v=Copy_of_Transformer_149_DSLink151_v
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_241_DSLink151_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink151_Part_v PURGE").show()
     
     print("Transformer_241_DSLink151_Part_v")
     
@@ -527,7 +528,7 @@ def Transformer_241_DSLink151_Part(spark: SparkSession, sc: SparkContext, **kw_a
     
     Transformer_241_DSLink151_Part_v.show(1000,False)
     
-    Transformer_241_DSLink151_Part_v.write.mode("overwrite").saveAsTable("Transformer_241_DSLink151_Part_v")
+    Transformer_241_DSLink151_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink151_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -539,7 +540,7 @@ def Transformer_241(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_241_DSLink151_Part_v=spark.table('Transformer_241_DSLink151_Part_v')
+    Transformer_241_DSLink151_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink151_Part_v')
     
     Transformer_241_v = Transformer_241_DSLink151_Part_v
     
@@ -547,7 +548,7 @@ def Transformer_241(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_241_DSLink238_v = Transformer_241_DSLink238_v.selectExpr("B_KEY","MI006_NEXT_REPAY_DATE","MI006_NEXT_REPAY_AMT","MI006_BLDVNN_START_DT_1","MI006_BLDVNN_REPAYMNT_1","RTRIM(MI006_REPAYMENT_TYPE_1) AS MI006_REPAYMENT_TYPE_1","MI006_BLDVNN_INSUR_AMT_DUE_1","MI006_BLDVNN_POST_DATE","MI006_BLDVNN_BALANCE_01","MI006_LAST_REPAY_DT","MI006_NEXT_DUE_DATE","MI006_REPAY_END_DATE","MI006_LEGAL_MARKER_DATE","RTRIM(MI006_LEGAL_MARKER_FLAG) AS MI006_LEGAL_MARKER_FLAG","MI006_LEGAL_MARKER_STAT","MI006_BLDVNN_PRIN_DUE_01","RTRIM(MI006_LEGAL_FLAG) AS MI006_LEGAL_FLAG","MI006_BLDVLL_CIV_COD_DAT","MI006_PSSO_NEXT_PAY_DATE","MI006_LEGAL_DATE","MI006_BANKRUPTCY_DATE","MI006_LEGAL_STAT","MI006_BLDVLL_CIV_ACT_CODE","MI006_BLDVNN_NXT_REPAY_DT").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NEXT_REPAY_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NEXT_REPAY_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVNN_START_DT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVNN_REPAYMNT_1', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REPAYMENT_TYPE_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_BLDVNN_INSUR_AMT_DUE_1', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVNN_POST_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVNN_BALANCE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LAST_REPAY_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NEXT_DUE_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REPAY_END_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LEGAL_MARKER_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LEGAL_MARKER_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_LEGAL_MARKER_STAT', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVNN_PRIN_DUE_01', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LEGAL_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_BLDVLL_CIV_COD_DAT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_PSSO_NEXT_PAY_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LEGAL_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BANKRUPTCY_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LEGAL_STAT', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVLL_CIV_ACT_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVNN_NXT_REPAY_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
-    spark.sql("DROP TABLE IF EXISTS Transformer_241_DSLink238_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink238_v PURGE").show()
     
     print("Transformer_241_DSLink238_v")
     
@@ -557,7 +558,7 @@ def Transformer_241(spark: SparkSession, sc: SparkContext, **kw_args):
     
     Transformer_241_DSLink238_v.show(1000,False)
     
-    Transformer_241_DSLink238_v.write.mode("overwrite").saveAsTable("Transformer_241_DSLink238_v")
+    Transformer_241_DSLink238_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink238_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -569,11 +570,11 @@ def TGT_BLDVNN_DSLink238_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    Transformer_241_DSLink238_v=spark.table('Transformer_241_DSLink238_v')
+    Transformer_241_DSLink238_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink238_v')
     
     TGT_BLDVNN_DSLink238_Part_v=Transformer_241_DSLink238_v
     
-    spark.sql("DROP TABLE IF EXISTS TGT_BLDVNN_DSLink238_Part_v").show()
+    spark.sql("DROP TABLE IF EXISTS datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__TGT_BLDVNN_DSLink238_Part_v PURGE").show()
     
     print("TGT_BLDVNN_DSLink238_Part_v")
     
@@ -583,7 +584,7 @@ def TGT_BLDVNN_DSLink238_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     TGT_BLDVNN_DSLink238_Part_v.show(1000,False)
     
-    TGT_BLDVNN_DSLink238_Part_v.write.mode("overwrite").saveAsTable("TGT_BLDVNN_DSLink238_Part_v")
+    TGT_BLDVNN_DSLink238_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__TGT_BLDVNN_DSLink238_Part_v")
     
 
 @task.pyspark(conn_id="spark-local")
@@ -595,7 +596,7 @@ def TGT_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     spark_register_ds_common_functions(spark)
     
     
-    TGT_BLDVNN_DSLink238_Part_v=spark.table('TGT_BLDVNN_DSLink238_Part_v')
+    TGT_BLDVNN_DSLink238_Part_v=spark.table('datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__TGT_BLDVNN_DSLink238_Part_v')
     
     log = logging.getLogger(__name__)
     
@@ -605,7 +606,7 @@ def TGT_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     
     log.info("write dataset files to "+locations)
     
-    spark.table("TGT_BLDVNN_DSLink238_Part_v").write.mode("overwrite").format("parquet").save(locations)
+    TGT_BLDVNN_DSLink238_Part_v.write.mode("overwrite").format("parquet").save(locations)
     
 
 ####################################[Main]###################################
@@ -613,6 +614,7 @@ import airflow
 with DAG(
     dag_id="job_DBdirect_Mis006_BLDVNN_Extr_POC",
     start_date=airflow.utils.dates.days_ago(1),
+    schedule_interval=None,
     tags=['datastage'],
 ) as dag:
     
