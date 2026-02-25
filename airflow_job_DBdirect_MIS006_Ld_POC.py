@@ -10,11 +10,52 @@
 
 
 from __future__ import annotations
+
+import base64
 from abc import abstractmethod
-from airflow.decorators import task, task_group
-from airflow.models import DAG
-from airflow.models import Variable
-from airflow.models.dag import DAG
+import os
+_SPARK_TASK_RUNNER = os.environ.get("SPARK_TASK_RUNNER") == "1"
+
+if not _SPARK_TASK_RUNNER:
+    import airflow
+    from airflow.decorators import task, task_group
+    from airflow.models import DAG, Variable
+    from airflow.models.dag import DAG
+    from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+else:
+    def _identity(func=None, **_kwargs):
+        if func is None:
+            return lambda f: f
+        return func
+
+    class _TaskDecorator:
+        def __call__(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+        def pyspark(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+    task = _TaskDecorator()
+
+    def task_group(*args, **kwargs):
+        return _identity
+
+    class Variable:
+        @staticmethod
+        def get(key, default_var=None, deserialize_json=False):
+            if key == "JOB_PARAMS":
+                raw = os.environ.get("JOB_PARAMS_B64")
+                if raw:
+                    import base64 as _base64
+                    import json as _json
+                    return _json.loads(_base64.b64decode(raw.encode()).decode())
+            return default_var if default_var is not None else {}
+
+    class DAG:
+        pass
+
+    class SparkSubmitOperator:
+        pass
 from datetime import datetime, timedelta
 from jinja2 import Template
 from pyspark import SparkContext
@@ -26,7 +67,8 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 import json
 import logging
-import pendulum
+if not _SPARK_TASK_RUNNER:
+    import pendulum
 import textwrap
 
 @task
@@ -40,8 +82,6 @@ def Job_VIEW(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def DS_TGT_MIS006(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -80,8 +120,6 @@ def V0A0(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def trx_MIS006_trx_LoadTable_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -105,9 +143,6 @@ def trx_MIS006_trx_LoadTable_Part(spark: SparkSession, sc: SparkContext, **kw_ar
     trx_MIS006_trx_LoadTable_Part_v.show(1000,False)
     
     trx_MIS006_trx_LoadTable_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_Ld_POC__trx_MIS006_trx_LoadTable_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def trx_MIS006(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -214,9 +249,6 @@ def trx_MIS006(spark: SparkSession, sc: SparkContext, **kw_args):
     trx_MIS006_pk_Dup_v.show(1000,False)
     
     trx_MIS006_pk_Dup_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_Ld_POC__trx_MIS006_pk_Dup_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -240,9 +272,6 @@ def NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part(spark: SparkSession, sc: SparkContext, 
     NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_v.show(1000,False)
     
     NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_Ld_POC__NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def pk_Dup_pk_Dup_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -266,9 +295,6 @@ def pk_Dup_pk_Dup_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     pk_Dup_pk_Dup_Part_v.show(1000,False)
     
     pk_Dup_pk_Dup_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_Ld_POC__pk_Dup_pk_Dup_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def NZ_TGT_STG_MIS006(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -287,20 +313,25 @@ def NZ_TGT_STG_MIS006(spark: SparkSession, sc: SparkContext, **kw_args):
     
     job_params = Variable.get("JOB_PARAMS",deserialize_json=True)
     
-    catalog=Variable.get("ICEBERG_CATALOG_NAME", default_var="iceberg")
+    # HMS-only: force spark_catalog to avoid iceberg multi-part namespace errors.
+    catalog = "spark_catalog"
     
     
     
     table=Template("{{dbdir.pSTAGING_CORE_SCHM}}.TCS_MIS006_POC").render(job_params)
     
-    full_table = f"{catalog}.{table}"
-    
-    log.info(f"write to iceberg table {full_table}")
-    
-    NZ_TGT_STG_MIS006_v.writeTo(full_table).createOrReplace()
-    
+    if catalog == "spark_catalog" and "." in table:
+        full_table = table
+    else:
+        full_table = f"{catalog}.{table}"
 
-@task.pyspark(conn_id="spark-local")
+    log.info(f"write to table {full_table}")
+
+    # Use HMS table write semantics (avoid Iceberg RTAS) when using spark_catalog
+    if catalog == "spark_catalog":
+        NZ_TGT_STG_MIS006_v.write.mode("overwrite").saveAsTable(full_table)
+    else:
+        NZ_TGT_STG_MIS006_v.writeTo(full_table).createOrReplace()
 def pk_Dup(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -317,52 +348,132 @@ def pk_Dup(spark: SparkSession, sc: SparkContext, **kw_args):
     
 
 ####################################[Main]###################################
-import airflow
-with DAG(
-    dag_id="job_DBdirect_MIS006_Ld_POC",
-    start_date=airflow.utils.dates.days_ago(1),
-    schedule_interval=None,
-    tags=['datastage'],
-) as dag:
+if not _SPARK_TASK_RUNNER:
+    _JOB_PARAMS_B64 = base64.b64encode(json.dumps(Variable.get("JOB_PARAMS", default_var={}, deserialize_json=True)).encode()).decode()
+    with DAG(
+        dag_id="job_DBdirect_MIS006_Ld_POC",
+        start_date=airflow.utils.dates.days_ago(1),
+        schedule_interval=None,
+        tags=['datastage'],
+    ) as dag:
+        
+        job_DBdirect_MIS006_Ld_POC_task = job_DBdirect_MIS006_Ld_POC()
+        
+        Job_VIEW_task = Job_VIEW()
+        
+        DS_TGT_MIS006_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="DS_TGT_MIS006",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="DS_TGT_MIS006",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "DS_TGT_MIS006"],
+        )
+        
+        V0A0_task = V0A0()
+        
+        trx_MIS006_trx_LoadTable_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="trx_MIS006_trx_LoadTable_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="trx_MIS006_trx_LoadTable_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "trx_MIS006_trx_LoadTable_Part"],
+        )
+        
+        trx_MIS006_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="trx_MIS006",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="trx_MIS006",
+            executor_memory="8g",
+            driver_memory="64g",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "trx_MIS006"],
+        )
+        
+        NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part"],
+        )
+        
+        pk_Dup_pk_Dup_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="pk_Dup_pk_Dup_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="pk_Dup_pk_Dup_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "pk_Dup_pk_Dup_Part"],
+        )
+        
+        NZ_TGT_STG_MIS006_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NZ_TGT_STG_MIS006",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NZ_TGT_STG_MIS006",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NZ_TGT_STG_MIS006"],
+        )
+        
+        pk_Dup_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="pk_Dup",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="pk_Dup",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "pk_Dup"],
+        )
+        
+        
+        job_DBdirect_MIS006_Ld_POC_task >> Job_VIEW_task
+        
+        Job_VIEW_task >> DS_TGT_MIS006_task
+        
+        Job_VIEW_task >> V0A0_task
+        
+        DS_TGT_MIS006_task >> trx_MIS006_trx_LoadTable_Part_task
+        
+        trx_MIS006_trx_LoadTable_Part_task >> trx_MIS006_task
+        
+        trx_MIS006_task >> NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_task
+        
+        trx_MIS006_task >> pk_Dup_pk_Dup_Part_task
+        
+        NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_task >> NZ_TGT_STG_MIS006_task
+        
+        pk_Dup_pk_Dup_Part_task >> pk_Dup_task
+        
     
-    job_DBdirect_MIS006_Ld_POC_task = job_DBdirect_MIS006_Ld_POC()
     
-    Job_VIEW_task = Job_VIEW()
-    
-    DS_TGT_MIS006_task = DS_TGT_MIS006()
-    
-    V0A0_task = V0A0()
-    
-    trx_MIS006_trx_LoadTable_Part_task = trx_MIS006_trx_LoadTable_Part()
-    
-    trx_MIS006_task = trx_MIS006()
-    
-    NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_task = NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part()
-    
-    pk_Dup_pk_Dup_Part_task = pk_Dup_pk_Dup_Part()
-    
-    NZ_TGT_STG_MIS006_task = NZ_TGT_STG_MIS006()
-    
-    pk_Dup_task = pk_Dup()
-    
-    
-    job_DBdirect_MIS006_Ld_POC_task >> Job_VIEW_task
-    
-    Job_VIEW_task >> DS_TGT_MIS006_task
-    
-    Job_VIEW_task >> V0A0_task
-    
-    DS_TGT_MIS006_task >> trx_MIS006_trx_LoadTable_Part_task
-    
-    trx_MIS006_trx_LoadTable_Part_task >> trx_MIS006_task
-    
-    trx_MIS006_task >> NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_task
-    
-    trx_MIS006_task >> pk_Dup_pk_Dup_Part_task
-    
-    NZ_TGT_STG_MIS006_ln_tgt_MIS006_Part_task >> NZ_TGT_STG_MIS006_task
-    
-    pk_Dup_pk_Dup_Part_task >> pk_Dup_task
-    
-
-

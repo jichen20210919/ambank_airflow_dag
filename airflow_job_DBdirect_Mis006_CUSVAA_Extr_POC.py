@@ -10,11 +10,52 @@
 
 
 from __future__ import annotations
+
+import base64
 from abc import abstractmethod
-from airflow.decorators import task, task_group
-from airflow.models import DAG
-from airflow.models import Variable
-from airflow.models.dag import DAG
+import os
+_SPARK_TASK_RUNNER = os.environ.get("SPARK_TASK_RUNNER") == "1"
+
+if not _SPARK_TASK_RUNNER:
+    import airflow
+    from airflow.decorators import task, task_group
+    from airflow.models import DAG, Variable
+    from airflow.models.dag import DAG
+    from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+else:
+    def _identity(func=None, **_kwargs):
+        if func is None:
+            return lambda f: f
+        return func
+
+    class _TaskDecorator:
+        def __call__(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+        def pyspark(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+    task = _TaskDecorator()
+
+    def task_group(*args, **kwargs):
+        return _identity
+
+    class Variable:
+        @staticmethod
+        def get(key, default_var=None, deserialize_json=False):
+            if key == "JOB_PARAMS":
+                raw = os.environ.get("JOB_PARAMS_B64")
+                if raw:
+                    import base64 as _base64
+                    import json as _json
+                    return _json.loads(_base64.b64decode(raw.encode()).decode())
+            return default_var if default_var is not None else {}
+
+    class DAG:
+        pass
+
+    class SparkSubmitOperator:
+        pass
 from datetime import datetime, timedelta
 from jinja2 import Template
 from pyspark import SparkContext
@@ -24,7 +65,8 @@ from pyspark.sql.functions import lit, col, input_file_name
 from pyspark.sql.types import *
 import json
 import logging
-import pendulum
+if not _SPARK_TASK_RUNNER:
+    import pendulum
 import textwrap
 
 @task
@@ -44,8 +86,6 @@ def V80A0(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -243,9 +283,6 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     NETZ_SRC_TBL_NM_x_v.show(1000,False)
     
     NETZ_SRC_TBL_NM_x_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__NETZ_SRC_TBL_NM_x_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_52_x_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -269,9 +306,6 @@ def Transformer_52_x_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Transformer_52_x_Part_v.show(1000,False)
     
     Transformer_52_x_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_x_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -299,9 +333,6 @@ def Transformer_52(spark: SparkSession, sc: SparkContext, **kw_args):
     Transformer_52_Lnk_Cusvaa_Tgt_v.show(1000,False)
     
     Transformer_52_Lnk_Cusvaa_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__Transformer_52_Lnk_Cusvaa_Tgt_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -325,9 +356,6 @@ def TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_a
     TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v.show(1000,False)
     
     TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_CUSVAA_Extr_POC__TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TGT_CUSVAA(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -350,44 +378,100 @@ def TGT_CUSVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     
 
 ####################################[Main]###################################
-import airflow
-with DAG(
-    dag_id="job_DBdirect_Mis006_CUSVAA_Extr_POC",
-    start_date=airflow.utils.dates.days_ago(1),
-    schedule_interval=None,
-    tags=['datastage'],
-) as dag:
+if not _SPARK_TASK_RUNNER:
+    _JOB_PARAMS_B64 = base64.b64encode(json.dumps(Variable.get("JOB_PARAMS", default_var={}, deserialize_json=True)).encode()).decode()
+    with DAG(
+        dag_id="job_DBdirect_Mis006_CUSVAA_Extr_POC",
+        start_date=airflow.utils.dates.days_ago(1),
+        schedule_interval=None,
+        tags=['datastage'],
+    ) as dag:
+        
+        job_DBdirect_Mis006_CUSVAA_Extr_POC_task = job_DBdirect_Mis006_CUSVAA_Extr_POC()
+        
+        Job_VIEW_task = Job_VIEW()
+        
+        V80A0_task = V80A0()
+        
+        NETZ_SRC_TBL_NM_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NETZ_SRC_TBL_NM",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NETZ_SRC_TBL_NM",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NETZ_SRC_TBL_NM"],
+        )
+        
+        Transformer_52_x_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_52_x_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_52_x_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_52_x_Part"],
+        )
+        
+        Transformer_52_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_52",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_52",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_52"],
+        )
+        
+        TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part"],
+        )
+        
+        TGT_CUSVAA_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TGT_CUSVAA",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TGT_CUSVAA",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TGT_CUSVAA"],
+        )
+        
+        
+        job_DBdirect_Mis006_CUSVAA_Extr_POC_task >> Job_VIEW_task
+        
+        Job_VIEW_task >> V80A0_task
+        
+        Job_VIEW_task >> NETZ_SRC_TBL_NM_task
+        
+        NETZ_SRC_TBL_NM_task >> Transformer_52_x_Part_task
+        
+        Transformer_52_x_Part_task >> Transformer_52_task
+        
+        Transformer_52_task >> TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_task
+        
+        TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_task >> TGT_CUSVAA_task
+        
     
-    job_DBdirect_Mis006_CUSVAA_Extr_POC_task = job_DBdirect_Mis006_CUSVAA_Extr_POC()
     
-    Job_VIEW_task = Job_VIEW()
-    
-    V80A0_task = V80A0()
-    
-    NETZ_SRC_TBL_NM_task = NETZ_SRC_TBL_NM()
-    
-    Transformer_52_x_Part_task = Transformer_52_x_Part()
-    
-    Transformer_52_task = Transformer_52()
-    
-    TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_task = TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part()
-    
-    TGT_CUSVAA_task = TGT_CUSVAA()
-    
-    
-    job_DBdirect_Mis006_CUSVAA_Extr_POC_task >> Job_VIEW_task
-    
-    Job_VIEW_task >> V80A0_task
-    
-    Job_VIEW_task >> NETZ_SRC_TBL_NM_task
-    
-    NETZ_SRC_TBL_NM_task >> Transformer_52_x_Part_task
-    
-    Transformer_52_x_Part_task >> Transformer_52_task
-    
-    Transformer_52_task >> TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_task
-    
-    TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part_task >> TGT_CUSVAA_task
-    
-
-

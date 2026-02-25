@@ -10,11 +10,52 @@
 
 
 from __future__ import annotations
+
+import base64
 from abc import abstractmethod
-from airflow.decorators import task, task_group
-from airflow.models import DAG
-from airflow.models import Variable
-from airflow.models.dag import DAG
+import os
+_SPARK_TASK_RUNNER = os.environ.get("SPARK_TASK_RUNNER") == "1"
+
+if not _SPARK_TASK_RUNNER:
+    import airflow
+    from airflow.decorators import task, task_group
+    from airflow.models import DAG, Variable
+    from airflow.models.dag import DAG
+    from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+else:
+    def _identity(func=None, **_kwargs):
+        if func is None:
+            return lambda f: f
+        return func
+
+    class _TaskDecorator:
+        def __call__(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+        def pyspark(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+    task = _TaskDecorator()
+
+    def task_group(*args, **kwargs):
+        return _identity
+
+    class Variable:
+        @staticmethod
+        def get(key, default_var=None, deserialize_json=False):
+            if key == "JOB_PARAMS":
+                raw = os.environ.get("JOB_PARAMS_B64")
+                if raw:
+                    import base64 as _base64
+                    import json as _json
+                    return _json.loads(_base64.b64decode(raw.encode()).decode())
+            return default_var if default_var is not None else {}
+
+    class DAG:
+        pass
+
+    class SparkSubmitOperator:
+        pass
 from datetime import datetime, timedelta
 from jinja2 import Template
 from pyspark import SparkContext
@@ -24,7 +65,8 @@ from pyspark.sql.functions import lit, col, input_file_name
 from pyspark.sql.types import *
 import json
 import logging
-import pendulum
+if not _SPARK_TASK_RUNNER:
+    import pendulum
 import textwrap
 
 @task
@@ -38,8 +80,6 @@ def Job_VIEW(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -804,8 +844,6 @@ def V0A59(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def xfm_ln_All_Dir_Src_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -829,9 +867,6 @@ def xfm_ln_All_Dir_Src_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     xfm_ln_All_Dir_Src_Part_v.show(1000,False)
     
     xfm_ln_All_Dir_Src_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC__xfm_ln_All_Dir_Src_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def xfm(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -859,9 +894,6 @@ def xfm(spark: SparkSession, sc: SparkContext, **kw_args):
     xfm_ln_ALL_Direct_Tgt_v.show(1000,False)
     
     xfm_ln_ALL_Direct_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC__xfm_ln_ALL_Direct_Tgt_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TGT_Direct_All_ln_ALL_Direct_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -885,9 +917,6 @@ def TGT_Direct_All_ln_ALL_Direct_Tgt_Part(spark: SparkSession, sc: SparkContext,
     TGT_Direct_All_ln_ALL_Direct_Tgt_Part_v.show(1000,False)
     
     TGT_Direct_All_ln_ALL_Direct_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC__TGT_Direct_All_ln_ALL_Direct_Tgt_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TGT_Direct_All(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -910,44 +939,100 @@ def TGT_Direct_All(spark: SparkSession, sc: SparkContext, **kw_args):
     
 
 ####################################[Main]###################################
-import airflow
-with DAG(
-    dag_id="job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC",
-    start_date=airflow.utils.dates.days_ago(1),
-    schedule_interval=None,
-    tags=['datastage'],
-) as dag:
+if not _SPARK_TASK_RUNNER:
+    _JOB_PARAMS_B64 = base64.b64encode(json.dumps(Variable.get("JOB_PARAMS", default_var={}, deserialize_json=True)).encode()).decode()
+    with DAG(
+        dag_id="job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC",
+        start_date=airflow.utils.dates.days_ago(1),
+        schedule_interval=None,
+        tags=['datastage'],
+    ) as dag:
+        
+        job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC_task = job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC()
+        
+        Job_VIEW_task = Job_VIEW()
+        
+        NETZ_SRC_TBL_NM_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NETZ_SRC_TBL_NM",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NETZ_SRC_TBL_NM",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NETZ_SRC_TBL_NM"],
+        )
+        
+        V0A59_task = V0A59()
+        
+        xfm_ln_All_Dir_Src_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="xfm_ln_All_Dir_Src_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="xfm_ln_All_Dir_Src_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "xfm_ln_All_Dir_Src_Part"],
+        )
+        
+        xfm_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="xfm",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="xfm",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "xfm"],
+        )
+        
+        TGT_Direct_All_ln_ALL_Direct_Tgt_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TGT_Direct_All_ln_ALL_Direct_Tgt_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TGT_Direct_All_ln_ALL_Direct_Tgt_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TGT_Direct_All_ln_ALL_Direct_Tgt_Part"],
+        )
+        
+        TGT_Direct_All_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TGT_Direct_All",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TGT_Direct_All",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TGT_Direct_All"],
+        )
+        
+        
+        job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC_task >> Job_VIEW_task
+        
+        Job_VIEW_task >> NETZ_SRC_TBL_NM_task
+        
+        Job_VIEW_task >> V0A59_task
+        
+        NETZ_SRC_TBL_NM_task >> xfm_ln_All_Dir_Src_Part_task
+        
+        xfm_ln_All_Dir_Src_Part_task >> xfm_task
+        
+        xfm_task >> TGT_Direct_All_ln_ALL_Direct_Tgt_Part_task
+        
+        TGT_Direct_All_ln_ALL_Direct_Tgt_Part_task >> TGT_Direct_All_task
+        
     
-    job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC_task = job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC()
     
-    Job_VIEW_task = Job_VIEW()
-    
-    NETZ_SRC_TBL_NM_task = NETZ_SRC_TBL_NM()
-    
-    V0A59_task = V0A59()
-    
-    xfm_ln_All_Dir_Src_Part_task = xfm_ln_All_Dir_Src_Part()
-    
-    xfm_task = xfm()
-    
-    TGT_Direct_All_ln_ALL_Direct_Tgt_Part_task = TGT_Direct_All_ln_ALL_Direct_Tgt_Part()
-    
-    TGT_Direct_All_task = TGT_Direct_All()
-    
-    
-    job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC_task >> Job_VIEW_task
-    
-    Job_VIEW_task >> NETZ_SRC_TBL_NM_task
-    
-    Job_VIEW_task >> V0A59_task
-    
-    NETZ_SRC_TBL_NM_task >> xfm_ln_All_Dir_Src_Part_task
-    
-    xfm_ln_All_Dir_Src_Part_task >> xfm_task
-    
-    xfm_task >> TGT_Direct_All_ln_ALL_Direct_Tgt_Part_task
-    
-    TGT_Direct_All_ln_ALL_Direct_Tgt_Part_task >> TGT_Direct_All_task
-    
-
-

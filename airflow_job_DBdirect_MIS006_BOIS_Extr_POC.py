@@ -10,11 +10,52 @@
 
 
 from __future__ import annotations
+
+import base64
 from abc import abstractmethod
-from airflow.decorators import task, task_group
-from airflow.models import DAG
-from airflow.models import Variable
-from airflow.models.dag import DAG
+import os
+_SPARK_TASK_RUNNER = os.environ.get("SPARK_TASK_RUNNER") == "1"
+
+if not _SPARK_TASK_RUNNER:
+    import airflow
+    from airflow.decorators import task, task_group
+    from airflow.models import DAG, Variable
+    from airflow.models.dag import DAG
+    from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+else:
+    def _identity(func=None, **_kwargs):
+        if func is None:
+            return lambda f: f
+        return func
+
+    class _TaskDecorator:
+        def __call__(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+        def pyspark(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+    task = _TaskDecorator()
+
+    def task_group(*args, **kwargs):
+        return _identity
+
+    class Variable:
+        @staticmethod
+        def get(key, default_var=None, deserialize_json=False):
+            if key == "JOB_PARAMS":
+                raw = os.environ.get("JOB_PARAMS_B64")
+                if raw:
+                    import base64 as _base64
+                    import json as _json
+                    return _json.loads(_base64.b64decode(raw.encode()).decode())
+            return default_var if default_var is not None else {}
+
+    class DAG:
+        pass
+
+    class SparkSubmitOperator:
+        pass
 from datetime import datetime, timedelta
 from jinja2 import Template
 from pyspark import SparkContext
@@ -26,7 +67,8 @@ from pyspark.sql.window import Window
 from pyspark.sql import functions as F
 import json
 import logging
-import pendulum
+if not _SPARK_TASK_RUNNER:
+    import pendulum
 import textwrap
 
 @task
@@ -40,8 +82,6 @@ def Job_VIEW(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def NETZ_SRC_BASM(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -241,9 +281,6 @@ def NETZ_SRC_BASM(spark: SparkSession, sc: SparkContext, **kw_args):
     NETZ_SRC_BASM_srt_keys_v.show(1000,False)
     
     NETZ_SRC_BASM_srt_keys_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__NETZ_SRC_BASM_srt_keys_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1210,8 +1247,6 @@ def V25A0(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def srt_keys_srt_keys_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1235,9 +1270,6 @@ def srt_keys_srt_keys_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     srt_keys_srt_keys_Part_v.show(1000,False)
     
     srt_keys_srt_keys_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__srt_keys_srt_keys_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TRN_CONVERT_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1261,9 +1293,6 @@ def TRN_CONVERT_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args
     TRN_CONVERT_lnk_Source_Part_v.show(1000,False)
     
     TRN_CONVERT_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__TRN_CONVERT_lnk_Source_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def srt_keys(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1293,9 +1322,6 @@ def srt_keys(spark: SparkSession, sc: SparkContext, **kw_args):
     srt_keys_srt_KeyChange_v.show(1000,False)
     
     srt_keys_srt_KeyChange_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__srt_keys_srt_KeyChange_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TRN_CONVERT(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1323,9 +1349,6 @@ def TRN_CONVERT(spark: SparkSession, sc: SparkContext, **kw_args):
     TRN_CONVERT_Left_v.show(1000,False)
     
     TRN_CONVERT_Left_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__TRN_CONVERT_Left_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def srt_KeyChange_srt_KeyChange_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1349,9 +1372,6 @@ def srt_KeyChange_srt_KeyChange_Part(spark: SparkSession, sc: SparkContext, **kw
     srt_KeyChange_srt_KeyChange_Part_v.show(1000,False)
     
     srt_KeyChange_srt_KeyChange_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__srt_KeyChange_srt_KeyChange_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Join_57_Left_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1375,9 +1395,6 @@ def Join_57_Left_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Join_57_Left_Part_v.show(1000,False)
     
     Join_57_Left_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Join_57_Left_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def srt_KeyChange(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1416,9 +1433,6 @@ def srt_KeyChange(spark: SparkSession, sc: SparkContext, **kw_args):
     srt_KeyChange_fil_KeyChange_v.show(1000,False)
     
     srt_KeyChange_fil_KeyChange_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__srt_KeyChange_fil_KeyChange_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def fil_KeyChange_fil_KeyChange_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1442,9 +1456,6 @@ def fil_KeyChange_fil_KeyChange_Part(spark: SparkSession, sc: SparkContext, **kw
     fil_KeyChange_fil_KeyChange_Part_v.show(1000,False)
     
     fil_KeyChange_fil_KeyChange_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__fil_KeyChange_fil_KeyChange_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def fil_KeyChange(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1474,9 +1485,6 @@ def fil_KeyChange(spark: SparkSession, sc: SparkContext, **kw_args):
     fil_KeyChange_DSLink148_v.show(1000,False)
     
     fil_KeyChange_DSLink148_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__fil_KeyChange_DSLink148_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Copy_149_DSLink148_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1500,9 +1508,6 @@ def Copy_149_DSLink148_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Copy_149_DSLink148_Part_v.show(1000,False)
     
     Copy_149_DSLink148_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Copy_149_DSLink148_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Copy_149(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1546,9 +1551,6 @@ def Copy_149(spark: SparkSession, sc: SparkContext, **kw_args):
     Copy_149_Penalty_v.show(1000,False)
     
     Copy_149_Penalty_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Copy_149_Penalty_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Join_57_Right_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1572,9 +1574,6 @@ def Join_57_Right_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Join_57_Right_Part_v.show(1000,False)
     
     Join_57_Right_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Join_57_Right_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Join_152_Penalty_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1598,9 +1597,6 @@ def Join_152_Penalty_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Join_152_Penalty_Part_v.show(1000,False)
     
     Join_152_Penalty_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Join_152_Penalty_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Join_57(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1630,9 +1626,6 @@ def Join_57(spark: SparkSession, sc: SparkContext, **kw_args):
     Join_57_P_Join_v.show(1000,False)
     
     Join_57_P_Join_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Join_57_P_Join_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Join_152_P_Join_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1656,9 +1649,6 @@ def Join_152_P_Join_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Join_152_P_Join_Part_v.show(1000,False)
     
     Join_152_P_Join_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Join_152_P_Join_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Join_152(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1688,9 +1678,6 @@ def Join_152(spark: SparkSession, sc: SparkContext, **kw_args):
     Join_152_LnkJoin_v.show(1000,False)
     
     Join_152_LnkJoin_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Join_152_LnkJoin_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_73_LnkJoin_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1714,9 +1701,6 @@ def Transformer_73_LnkJoin_Part(spark: SparkSession, sc: SparkContext, **kw_args
     Transformer_73_LnkJoin_Part_v.show(1000,False)
     
     Transformer_73_LnkJoin_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Transformer_73_LnkJoin_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_73(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1744,9 +1728,6 @@ def Transformer_73(spark: SparkSession, sc: SparkContext, **kw_args):
     Transformer_73_lnk_BOIS_Tgt_v.show(1000,False)
     
     Transformer_73_lnk_BOIS_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__Transformer_73_lnk_BOIS_Tgt_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TGT_BASM_BOIS_lnk_BOIS_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1770,9 +1751,6 @@ def TGT_BASM_BOIS_lnk_BOIS_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_
     TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_v.show(1000,False)
     
     TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def TGT_BASM_BOIS(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1795,120 +1773,363 @@ def TGT_BASM_BOIS(spark: SparkSession, sc: SparkContext, **kw_args):
     
 
 ####################################[Main]###################################
-import airflow
-with DAG(
-    dag_id="job_DBdirect_MIS006_BOIS_Extr_POC",
-    start_date=airflow.utils.dates.days_ago(1),
-    schedule_interval=None,
-    tags=['datastage'],
-) as dag:
+if not _SPARK_TASK_RUNNER:
+    _JOB_PARAMS_B64 = base64.b64encode(json.dumps(Variable.get("JOB_PARAMS", default_var={}, deserialize_json=True)).encode()).decode()
+    with DAG(
+        dag_id="job_DBdirect_MIS006_BOIS_Extr_POC",
+        start_date=airflow.utils.dates.days_ago(1),
+        schedule_interval=None,
+        tags=['datastage'],
+    ) as dag:
+        
+        job_DBdirect_MIS006_BOIS_Extr_POC_task = job_DBdirect_MIS006_BOIS_Extr_POC()
+        
+        Job_VIEW_task = Job_VIEW()
+        
+        NETZ_SRC_BASM_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NETZ_SRC_BASM",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NETZ_SRC_BASM",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NETZ_SRC_BASM"],
+        )
+        
+        NETZ_SRC_TBL_NM_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NETZ_SRC_TBL_NM",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NETZ_SRC_TBL_NM",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NETZ_SRC_TBL_NM"],
+        )
+        
+        V0A105_task = V0A105()
+        
+        V25A0_task = V25A0()
+        
+        srt_keys_srt_keys_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="srt_keys_srt_keys_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="srt_keys_srt_keys_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "srt_keys_srt_keys_Part"],
+        )
+        
+        TRN_CONVERT_lnk_Source_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TRN_CONVERT_lnk_Source_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TRN_CONVERT_lnk_Source_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TRN_CONVERT_lnk_Source_Part"],
+        )
+        
+        srt_keys_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="srt_keys",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="srt_keys",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "srt_keys"],
+        )
+        
+        TRN_CONVERT_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TRN_CONVERT",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TRN_CONVERT",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TRN_CONVERT"],
+        )
+        
+        srt_KeyChange_srt_KeyChange_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="srt_KeyChange_srt_KeyChange_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="srt_KeyChange_srt_KeyChange_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "srt_KeyChange_srt_KeyChange_Part"],
+        )
+        
+        Join_57_Left_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Join_57_Left_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Join_57_Left_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Join_57_Left_Part"],
+        )
+        
+        srt_KeyChange_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="srt_KeyChange",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="srt_KeyChange",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "srt_KeyChange"],
+        )
+        
+        fil_KeyChange_fil_KeyChange_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="fil_KeyChange_fil_KeyChange_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="fil_KeyChange_fil_KeyChange_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "fil_KeyChange_fil_KeyChange_Part"],
+        )
+        
+        fil_KeyChange_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="fil_KeyChange",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="fil_KeyChange",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "fil_KeyChange"],
+        )
+        
+        Copy_149_DSLink148_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Copy_149_DSLink148_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Copy_149_DSLink148_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Copy_149_DSLink148_Part"],
+        )
+        
+        Copy_149_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Copy_149",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Copy_149",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Copy_149"],
+        )
+        
+        Join_57_Right_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Join_57_Right_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Join_57_Right_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Join_57_Right_Part"],
+        )
+        
+        Join_152_Penalty_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Join_152_Penalty_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Join_152_Penalty_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Join_152_Penalty_Part"],
+        )
+        
+        Join_57_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Join_57",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Join_57",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Join_57"],
+        )
+        
+        Join_152_P_Join_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Join_152_P_Join_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Join_152_P_Join_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Join_152_P_Join_Part"],
+        )
+        
+        Join_152_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Join_152",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Join_152",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Join_152"],
+        )
+        
+        Transformer_73_LnkJoin_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_73_LnkJoin_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_73_LnkJoin_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_73_LnkJoin_Part"],
+        )
+        
+        Transformer_73_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_73",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_73",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_73"],
+        )
+        
+        TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TGT_BASM_BOIS_lnk_BOIS_Tgt_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TGT_BASM_BOIS_lnk_BOIS_Tgt_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TGT_BASM_BOIS_lnk_BOIS_Tgt_Part"],
+        )
+        
+        TGT_BASM_BOIS_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="TGT_BASM_BOIS",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="TGT_BASM_BOIS",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "TGT_BASM_BOIS"],
+        )
+        
+        
+        job_DBdirect_MIS006_BOIS_Extr_POC_task >> Job_VIEW_task
+        
+        Job_VIEW_task >> NETZ_SRC_BASM_task
+        
+        Job_VIEW_task >> NETZ_SRC_TBL_NM_task
+        
+        Job_VIEW_task >> V0A105_task
+        
+        Job_VIEW_task >> V25A0_task
+        
+        NETZ_SRC_BASM_task >> srt_keys_srt_keys_Part_task
+        
+        NETZ_SRC_TBL_NM_task >> TRN_CONVERT_lnk_Source_Part_task
+        
+        srt_keys_srt_keys_Part_task >> srt_keys_task
+        
+        TRN_CONVERT_lnk_Source_Part_task >> TRN_CONVERT_task
+        
+        srt_keys_task >> srt_KeyChange_srt_KeyChange_Part_task
+        
+        TRN_CONVERT_task >> Join_57_Left_Part_task
+        
+        srt_KeyChange_srt_KeyChange_Part_task >> srt_KeyChange_task
+        
+        Join_57_Left_Part_task >> Join_57_task
+        
+        srt_KeyChange_task >> fil_KeyChange_fil_KeyChange_Part_task
+        
+        fil_KeyChange_fil_KeyChange_Part_task >> fil_KeyChange_task
+        
+        fil_KeyChange_task >> Copy_149_DSLink148_Part_task
+        
+        Copy_149_DSLink148_Part_task >> Copy_149_task
+        
+        Copy_149_task >> Join_57_Right_Part_task
+        
+        Copy_149_task >> Join_152_Penalty_Part_task
+        
+        Join_57_Right_Part_task >> Join_57_task
+        
+        Join_152_Penalty_Part_task >> Join_152_task
+        
+        Join_57_task >> Join_152_P_Join_Part_task
+        
+        Join_152_P_Join_Part_task >> Join_152_task
+        
+        Join_152_task >> Transformer_73_LnkJoin_Part_task
+        
+        Transformer_73_LnkJoin_Part_task >> Transformer_73_task
+        
+        Transformer_73_task >> TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_task
+        
+        TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_task >> TGT_BASM_BOIS_task
+        
     
-    job_DBdirect_MIS006_BOIS_Extr_POC_task = job_DBdirect_MIS006_BOIS_Extr_POC()
     
-    Job_VIEW_task = Job_VIEW()
-    
-    NETZ_SRC_BASM_task = NETZ_SRC_BASM()
-    
-    NETZ_SRC_TBL_NM_task = NETZ_SRC_TBL_NM()
-    
-    V0A105_task = V0A105()
-    
-    V25A0_task = V25A0()
-    
-    srt_keys_srt_keys_Part_task = srt_keys_srt_keys_Part()
-    
-    TRN_CONVERT_lnk_Source_Part_task = TRN_CONVERT_lnk_Source_Part()
-    
-    srt_keys_task = srt_keys()
-    
-    TRN_CONVERT_task = TRN_CONVERT()
-    
-    srt_KeyChange_srt_KeyChange_Part_task = srt_KeyChange_srt_KeyChange_Part()
-    
-    Join_57_Left_Part_task = Join_57_Left_Part()
-    
-    srt_KeyChange_task = srt_KeyChange()
-    
-    fil_KeyChange_fil_KeyChange_Part_task = fil_KeyChange_fil_KeyChange_Part()
-    
-    fil_KeyChange_task = fil_KeyChange()
-    
-    Copy_149_DSLink148_Part_task = Copy_149_DSLink148_Part()
-    
-    Copy_149_task = Copy_149()
-    
-    Join_57_Right_Part_task = Join_57_Right_Part()
-    
-    Join_152_Penalty_Part_task = Join_152_Penalty_Part()
-    
-    Join_57_task = Join_57()
-    
-    Join_152_P_Join_Part_task = Join_152_P_Join_Part()
-    
-    Join_152_task = Join_152()
-    
-    Transformer_73_LnkJoin_Part_task = Transformer_73_LnkJoin_Part()
-    
-    Transformer_73_task = Transformer_73()
-    
-    TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_task = TGT_BASM_BOIS_lnk_BOIS_Tgt_Part()
-    
-    TGT_BASM_BOIS_task = TGT_BASM_BOIS()
-    
-    
-    job_DBdirect_MIS006_BOIS_Extr_POC_task >> Job_VIEW_task
-    
-    Job_VIEW_task >> NETZ_SRC_BASM_task
-    
-    Job_VIEW_task >> NETZ_SRC_TBL_NM_task
-    
-    Job_VIEW_task >> V0A105_task
-    
-    Job_VIEW_task >> V25A0_task
-    
-    NETZ_SRC_BASM_task >> srt_keys_srt_keys_Part_task
-    
-    NETZ_SRC_TBL_NM_task >> TRN_CONVERT_lnk_Source_Part_task
-    
-    srt_keys_srt_keys_Part_task >> srt_keys_task
-    
-    TRN_CONVERT_lnk_Source_Part_task >> TRN_CONVERT_task
-    
-    srt_keys_task >> srt_KeyChange_srt_KeyChange_Part_task
-    
-    TRN_CONVERT_task >> Join_57_Left_Part_task
-    
-    srt_KeyChange_srt_KeyChange_Part_task >> srt_KeyChange_task
-    
-    Join_57_Left_Part_task >> Join_57_task
-    
-    srt_KeyChange_task >> fil_KeyChange_fil_KeyChange_Part_task
-    
-    fil_KeyChange_fil_KeyChange_Part_task >> fil_KeyChange_task
-    
-    fil_KeyChange_task >> Copy_149_DSLink148_Part_task
-    
-    Copy_149_DSLink148_Part_task >> Copy_149_task
-    
-    Copy_149_task >> Join_57_Right_Part_task
-    
-    Copy_149_task >> Join_152_Penalty_Part_task
-    
-    Join_57_Right_Part_task >> Join_57_task
-    
-    Join_152_Penalty_Part_task >> Join_152_task
-    
-    Join_57_task >> Join_152_P_Join_Part_task
-    
-    Join_152_P_Join_Part_task >> Join_152_task
-    
-    Join_152_task >> Transformer_73_LnkJoin_Part_task
-    
-    Transformer_73_LnkJoin_Part_task >> Transformer_73_task
-    
-    Transformer_73_task >> TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_task
-    
-    TGT_BASM_BOIS_lnk_BOIS_Tgt_Part_task >> TGT_BASM_BOIS_task
-    
-
-

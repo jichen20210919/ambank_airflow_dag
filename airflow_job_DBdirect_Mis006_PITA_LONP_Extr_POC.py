@@ -10,11 +10,52 @@
 
 
 from __future__ import annotations
+
+import base64
 from abc import abstractmethod
-from airflow.decorators import task, task_group
-from airflow.models import DAG
-from airflow.models import Variable
-from airflow.models.dag import DAG
+import os
+_SPARK_TASK_RUNNER = os.environ.get("SPARK_TASK_RUNNER") == "1"
+
+if not _SPARK_TASK_RUNNER:
+    import airflow
+    from airflow.decorators import task, task_group
+    from airflow.models import DAG, Variable
+    from airflow.models.dag import DAG
+    from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+else:
+    def _identity(func=None, **_kwargs):
+        if func is None:
+            return lambda f: f
+        return func
+
+    class _TaskDecorator:
+        def __call__(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+        def pyspark(self, *args, **kwargs):
+            return _identity(*args, **kwargs)
+
+    task = _TaskDecorator()
+
+    def task_group(*args, **kwargs):
+        return _identity
+
+    class Variable:
+        @staticmethod
+        def get(key, default_var=None, deserialize_json=False):
+            if key == "JOB_PARAMS":
+                raw = os.environ.get("JOB_PARAMS_B64")
+                if raw:
+                    import base64 as _base64
+                    import json as _json
+                    return _json.loads(_base64.b64decode(raw.encode()).decode())
+            return default_var if default_var is not None else {}
+
+    class DAG:
+        pass
+
+    class SparkSubmitOperator:
+        pass
 from datetime import datetime, timedelta
 from jinja2 import Template
 from pyspark import SparkContext
@@ -26,7 +67,8 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 import json
 import logging
-import pendulum
+if not _SPARK_TASK_RUNNER:
+    import pendulum
 import pyspark.sql.functions as F
 import textwrap
 
@@ -41,8 +83,6 @@ def Job_VIEW(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def NETZ_SRC_TBL_NM2(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -695,8 +735,6 @@ def V99A7(**kw_args) -> str:
     # TODO: this is a dummy implementation, do your detailed job here
     keys = kw_args.keys
     return "({})".format(",".join(kw_args.keys()))
-
-@task.pyspark(conn_id="spark-local")
 def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -892,9 +930,6 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     NETZ_SRC_TBL_NM_lnk_Source_v.show(1000,False)
     
     NETZ_SRC_TBL_NM_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__NETZ_SRC_TBL_NM_lnk_Source_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_84_ln_Nxt_Lst_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -918,9 +953,6 @@ def Transformer_84_ln_Nxt_Lst_Part(spark: SparkSession, sc: SparkContext, **kw_a
     Transformer_84_ln_Nxt_Lst_Part_v.show(1000,False)
     
     Transformer_84_ln_Nxt_Lst_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_ln_Nxt_Lst_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Vertical_Pivot_of_Tier_rates_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -944,9 +976,6 @@ def Vertical_Pivot_of_Tier_rates_lnk_Source_Part(spark: SparkSession, sc: SparkC
     Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.show(1000,False)
     
     Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_84(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1002,9 +1031,6 @@ def Transformer_84(spark: SparkSession, sc: SparkContext, **kw_args):
     Transformer_84_joi_LONP_v.show(1000,False)
     
     Transformer_84_joi_LONP_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_84_joi_LONP_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1018,8 +1044,11 @@ def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_arg
 	
 	
 	
-    group_keys = ["BORM_KEY_1", "SEQ", "MI006_MEMB_CUST_AC"]
-    window_spec = Window.partitionBy(group_keys).orderBy("MI006_EFF_TIER_N_RATE_DT")
+    group_keys = ["BORM_KEY_1", "MI006_MEMB_CUST_AC"]
+    window_spec = Window.partitionBy(group_keys).orderBy(
+        F.col("MI006_EFF_TIER_N_RATE_DT").asc_nulls_last(),
+        F.col("SEQ").asc_nulls_last(),
+    )
     df_with_index = Vertical_Pivot_of_Tier_rates_lnk_Source_Part_v.withColumn("Pivot_index", F.row_number().over(window_spec) - 1)
     # 2. These are the metrics we are spreading across the 5 array slots.
     # We use explicit aliases to control the naming convention.
@@ -1030,12 +1059,15 @@ def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_arg
         F.first("MI006_ADJ_PERC_RATE_TIER_N").alias("MI006_ADJ_PERC_RATE_TIER_N"),
         F.first("MI006_INDEX_CD_RT_TIER_N").alias("MI006_INDEX_CD_RT_TIER_N")
     )
+    seq_df = df_with_index.groupBy(group_keys).agg(F.first("SEQ").alias("SEQ"))
+    df_pivoted = df_pivoted.join(seq_df, on=group_keys, how="left")
 
     # 3. Rename columns to match the CCustomOutput spec.
     # Spark Pivot output format is: {PivotValue}_{AliasName}
     # DataStage spec format is: {Name} (for index 0) and {Name}_{Index} (for 1-4)
     
     final_cols = group_keys.copy()
+    final_cols.append(F.col('SEQ'))
     
     # Define the order of metrics to match your MappingAdd records
     metrics = [
@@ -1083,9 +1115,6 @@ def Vertical_Pivot_of_Tier_rates(spark: SparkSession, sc: SparkContext, **kw_arg
     Vertical_Pivot_of_Tier_rates_i_v.show(1000,False)
     
     Vertical_Pivot_of_Tier_rates_i_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Vertical_Pivot_of_Tier_rates_i_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def joi_PITA_joi_LONP_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1109,9 +1138,6 @@ def joi_PITA_joi_LONP_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     joi_PITA_joi_LONP_Part_v.show(1000,False)
     
     joi_PITA_joi_LONP_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_LONP_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_50_i_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1135,9 +1161,6 @@ def Transformer_50_i_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Transformer_50_i_Part_v.show(1000,False)
     
     Transformer_50_i_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_i_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Transformer_50(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1165,9 +1188,6 @@ def Transformer_50(spark: SparkSession, sc: SparkContext, **kw_args):
     Transformer_50_DSLink61_v.show(1000,False)
     
     Transformer_50_DSLink61_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Transformer_50_DSLink61_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Copy_59_DSLink61_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1191,9 +1211,6 @@ def Copy_59_DSLink61_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     Copy_59_DSLink61_Part_v.show(1000,False)
     
     Copy_59_DSLink61_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_DSLink61_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def Copy_59(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1221,9 +1238,6 @@ def Copy_59(spark: SparkSession, sc: SparkContext, **kw_args):
     Copy_59_joi_PITA_v.show(1000,False)
     
     Copy_59_joi_PITA_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__Copy_59_joi_PITA_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def joi_PITA_joi_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1247,9 +1261,6 @@ def joi_PITA_joi_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     joi_PITA_joi_PITA_Part_v.show(1000,False)
     
     joi_PITA_joi_PITA_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_joi_PITA_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def joi_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1279,9 +1290,6 @@ def joi_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     joi_PITA_trx_PITA_v.show(1000,False)
     
     joi_PITA_trx_PITA_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__joi_PITA_trx_PITA_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def trx_PITA_trx_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1305,9 +1313,6 @@ def trx_PITA_trx_PITA_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     trx_PITA_trx_PITA_Part_v.show(1000,False)
     
     trx_PITA_trx_PITA_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_trx_PITA_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def trx_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1335,9 +1340,6 @@ def trx_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     trx_PITA_Lnk_PITA_Tgt_v.show(1000,False)
     
     trx_PITA_Lnk_PITA_Tgt_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__trx_PITA_Lnk_PITA_Tgt_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def DS_TGT_PITA_Lnk_PITA_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1361,9 +1363,6 @@ def DS_TGT_PITA_Lnk_PITA_Tgt_Part(spark: SparkSession, sc: SparkContext, **kw_ar
     DS_TGT_PITA_Lnk_PITA_Tgt_Part_v.show(1000,False)
     
     DS_TGT_PITA_Lnk_PITA_Tgt_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_PITA_LONP_Extr_POC__DS_TGT_PITA_Lnk_PITA_Tgt_Part_v")
-    
-
-@task.pyspark(conn_id="spark-local")
 def DS_TGT_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
         
     
@@ -1386,94 +1385,282 @@ def DS_TGT_PITA(spark: SparkSession, sc: SparkContext, **kw_args):
     
 
 ####################################[Main]###################################
-import airflow
-with DAG(
-    dag_id="job_DBdirect_Mis006_PITA_LONP_Extr_POC",
-    start_date=airflow.utils.dates.days_ago(1),
-    schedule_interval=None,
-    tags=['datastage'],
-) as dag:
+if not _SPARK_TASK_RUNNER:
+    _JOB_PARAMS_B64 = base64.b64encode(json.dumps(Variable.get("JOB_PARAMS", default_var={}, deserialize_json=True)).encode()).decode()
+    with DAG(
+        dag_id="job_DBdirect_Mis006_PITA_LONP_Extr_POC",
+        start_date=airflow.utils.dates.days_ago(1),
+        schedule_interval=None,
+        tags=['datastage'],
+    ) as dag:
+        
+        job_DBdirect_Mis006_PITA_LONP_Extr_POC_task = job_DBdirect_Mis006_PITA_LONP_Extr_POC()
+        
+        Job_VIEW_task = Job_VIEW()
+        
+        NETZ_SRC_TBL_NM2_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NETZ_SRC_TBL_NM2",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NETZ_SRC_TBL_NM2",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NETZ_SRC_TBL_NM2"],
+        )
+        
+        V99A7_task = V99A7()
+        
+        NETZ_SRC_TBL_NM_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="NETZ_SRC_TBL_NM",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="NETZ_SRC_TBL_NM",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "NETZ_SRC_TBL_NM"],
+        )
+        
+        Transformer_84_ln_Nxt_Lst_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_84_ln_Nxt_Lst_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_84_ln_Nxt_Lst_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_84_ln_Nxt_Lst_Part"],
+        )
+        
+        Vertical_Pivot_of_Tier_rates_lnk_Source_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Vertical_Pivot_of_Tier_rates_lnk_Source_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Vertical_Pivot_of_Tier_rates_lnk_Source_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Vertical_Pivot_of_Tier_rates_lnk_Source_Part"],
+        )
+        
+        Transformer_84_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_84",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_84",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_84"],
+        )
+        
+        Vertical_Pivot_of_Tier_rates_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Vertical_Pivot_of_Tier_rates",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Vertical_Pivot_of_Tier_rates",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Vertical_Pivot_of_Tier_rates"],
+        )
+        
+        joi_PITA_joi_LONP_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="joi_PITA_joi_LONP_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="joi_PITA_joi_LONP_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "joi_PITA_joi_LONP_Part"],
+        )
+        
+        Transformer_50_i_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_50_i_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_50_i_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_50_i_Part"],
+        )
+        
+        Transformer_50_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Transformer_50",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Transformer_50",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Transformer_50"],
+        )
+        
+        Copy_59_DSLink61_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Copy_59_DSLink61_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Copy_59_DSLink61_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Copy_59_DSLink61_Part"],
+        )
+        
+        Copy_59_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="Copy_59",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="Copy_59",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "Copy_59"],
+        )
+        
+        joi_PITA_joi_PITA_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="joi_PITA_joi_PITA_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="joi_PITA_joi_PITA_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "joi_PITA_joi_PITA_Part"],
+        )
+        
+        joi_PITA_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="joi_PITA",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="joi_PITA",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "joi_PITA"],
+        )
+        
+        trx_PITA_trx_PITA_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="trx_PITA_trx_PITA_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="trx_PITA_trx_PITA_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "trx_PITA_trx_PITA_Part"],
+        )
+        
+        trx_PITA_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="trx_PITA",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="trx_PITA",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "trx_PITA"],
+        )
+        
+        DS_TGT_PITA_Lnk_PITA_Tgt_Part_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="DS_TGT_PITA_Lnk_PITA_Tgt_Part",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="DS_TGT_PITA_Lnk_PITA_Tgt_Part",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "DS_TGT_PITA_Lnk_PITA_Tgt_Part"],
+        )
+        
+        DS_TGT_PITA_task = SparkSubmitOperator(
+            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            task_id="DS_TGT_PITA",
+            application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
+            name="DS_TGT_PITA",
+            deploy_mode="cluster",
+            principal="airflow@CLOUDERA.LOCAL",
+            keytab="/etc/security/keytabs/airflow.keytab",
+            py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
+            env_vars={"SPARK_TASK_RUNNER": "1", "HADOOP_CONF_DIR": "/etc/hadoop/conf", "YARN_CONF_DIR": "/etc/hadoop/conf", "HIVE_CONF_DIR": "/etc/hive/conf", "JOB_PARAMS_B64": _JOB_PARAMS_B64},
+            application_args=["--module", __file__, "--task", "DS_TGT_PITA"],
+        )
+        
+        
+        job_DBdirect_Mis006_PITA_LONP_Extr_POC_task >> Job_VIEW_task
+        
+        Job_VIEW_task >> NETZ_SRC_TBL_NM2_task
+        
+        Job_VIEW_task >> V99A7_task
+        
+        Job_VIEW_task >> NETZ_SRC_TBL_NM_task
+        
+        NETZ_SRC_TBL_NM2_task >> Transformer_84_ln_Nxt_Lst_Part_task
+        
+        NETZ_SRC_TBL_NM_task >> Vertical_Pivot_of_Tier_rates_lnk_Source_Part_task
+        
+        Transformer_84_ln_Nxt_Lst_Part_task >> Transformer_84_task
+        
+        Vertical_Pivot_of_Tier_rates_lnk_Source_Part_task >> Vertical_Pivot_of_Tier_rates_task
+        
+        Transformer_84_task >> joi_PITA_joi_LONP_Part_task
+        
+        Vertical_Pivot_of_Tier_rates_task >> Transformer_50_i_Part_task
+        
+        joi_PITA_joi_LONP_Part_task >> joi_PITA_task
+        
+        Transformer_50_i_Part_task >> Transformer_50_task
+        
+        Transformer_50_task >> Copy_59_DSLink61_Part_task
+        
+        Copy_59_DSLink61_Part_task >> Copy_59_task
+        
+        Copy_59_task >> joi_PITA_joi_PITA_Part_task
+        
+        joi_PITA_joi_PITA_Part_task >> joi_PITA_task
+        
+        joi_PITA_task >> trx_PITA_trx_PITA_Part_task
+        
+        trx_PITA_trx_PITA_Part_task >> trx_PITA_task
+        
+        trx_PITA_task >> DS_TGT_PITA_Lnk_PITA_Tgt_Part_task
+        
+        DS_TGT_PITA_Lnk_PITA_Tgt_Part_task >> DS_TGT_PITA_task
+        
     
-    job_DBdirect_Mis006_PITA_LONP_Extr_POC_task = job_DBdirect_Mis006_PITA_LONP_Extr_POC()
     
-    Job_VIEW_task = Job_VIEW()
-    
-    NETZ_SRC_TBL_NM2_task = NETZ_SRC_TBL_NM2()
-    
-    V99A7_task = V99A7()
-    
-    NETZ_SRC_TBL_NM_task = NETZ_SRC_TBL_NM()
-    
-    Transformer_84_ln_Nxt_Lst_Part_task = Transformer_84_ln_Nxt_Lst_Part()
-    
-    Vertical_Pivot_of_Tier_rates_lnk_Source_Part_task = Vertical_Pivot_of_Tier_rates_lnk_Source_Part()
-    
-    Transformer_84_task = Transformer_84()
-    
-    Vertical_Pivot_of_Tier_rates_task = Vertical_Pivot_of_Tier_rates()
-    
-    joi_PITA_joi_LONP_Part_task = joi_PITA_joi_LONP_Part()
-    
-    Transformer_50_i_Part_task = Transformer_50_i_Part()
-    
-    Transformer_50_task = Transformer_50()
-    
-    Copy_59_DSLink61_Part_task = Copy_59_DSLink61_Part()
-    
-    Copy_59_task = Copy_59()
-    
-    joi_PITA_joi_PITA_Part_task = joi_PITA_joi_PITA_Part()
-    
-    joi_PITA_task = joi_PITA()
-    
-    trx_PITA_trx_PITA_Part_task = trx_PITA_trx_PITA_Part()
-    
-    trx_PITA_task = trx_PITA()
-    
-    DS_TGT_PITA_Lnk_PITA_Tgt_Part_task = DS_TGT_PITA_Lnk_PITA_Tgt_Part()
-    
-    DS_TGT_PITA_task = DS_TGT_PITA()
-    
-    
-    job_DBdirect_Mis006_PITA_LONP_Extr_POC_task >> Job_VIEW_task
-    
-    Job_VIEW_task >> NETZ_SRC_TBL_NM2_task
-    
-    Job_VIEW_task >> V99A7_task
-    
-    Job_VIEW_task >> NETZ_SRC_TBL_NM_task
-    
-    NETZ_SRC_TBL_NM2_task >> Transformer_84_ln_Nxt_Lst_Part_task
-    
-    NETZ_SRC_TBL_NM_task >> Vertical_Pivot_of_Tier_rates_lnk_Source_Part_task
-    
-    Transformer_84_ln_Nxt_Lst_Part_task >> Transformer_84_task
-    
-    Vertical_Pivot_of_Tier_rates_lnk_Source_Part_task >> Vertical_Pivot_of_Tier_rates_task
-    
-    Transformer_84_task >> joi_PITA_joi_LONP_Part_task
-    
-    Vertical_Pivot_of_Tier_rates_task >> Transformer_50_i_Part_task
-    
-    joi_PITA_joi_LONP_Part_task >> joi_PITA_task
-    
-    Transformer_50_i_Part_task >> Transformer_50_task
-    
-    Transformer_50_task >> Copy_59_DSLink61_Part_task
-    
-    Copy_59_DSLink61_Part_task >> Copy_59_task
-    
-    Copy_59_task >> joi_PITA_joi_PITA_Part_task
-    
-    joi_PITA_joi_PITA_Part_task >> joi_PITA_task
-    
-    joi_PITA_task >> trx_PITA_trx_PITA_Part_task
-    
-    trx_PITA_trx_PITA_Part_task >> trx_PITA_task
-    
-    trx_PITA_task >> DS_TGT_PITA_Lnk_PITA_Tgt_Part_task
-    
-    DS_TGT_PITA_Lnk_PITA_Tgt_Part_task >> DS_TGT_PITA_task
-    
-
-
