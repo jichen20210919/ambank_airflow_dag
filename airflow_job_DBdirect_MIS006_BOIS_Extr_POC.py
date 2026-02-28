@@ -960,7 +960,7 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
         WHEN BOIS.STOP_ACCRUAL = 'N' THEN 
     
-            CAST(DATE_FORMAT(DATE_ADD(TO_DATE('1899-12-31'), DATE_DIFF({{Curr_Date}},'1900-01-01') + 1), 'yyyyMMdd') AS INT)
+            CAST(DATE_FORMAT(DATE_ADD(TO_DATE('1900-01-01'), DATE_DIFF({{Curr_Date}},'1900-01-01') + 1), 'yyyyMMdd') AS INT)
     
         ELSE 0 
     
