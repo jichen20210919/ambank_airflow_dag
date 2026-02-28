@@ -268,7 +268,8 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_TBL_NM_x_v=NETZ_SRC_TBL_NM_v.select(NETZ_SRC_TBL_NM_v[0].cast('string').alias('KEY_1'),NETZ_SRC_TBL_NM_v[1].cast('integer').alias('MI006_NO_OF_GUARANTOR'),NETZ_SRC_TBL_NM_v[2].cast('string').alias('MI006_BLDVTT_GUA1_NAME'),NETZ_SRC_TBL_NM_v[3].cast('string').alias('MI006_JOINT_BOR_CIF_NO'),NETZ_SRC_TBL_NM_v[4].cast('string').alias('SHORT_NAME'),NETZ_SRC_TBL_NM_v[5].cast('string').alias('NAME1'),NETZ_SRC_TBL_NM_v[6].cast('string').alias('INTRO_BROKER_INDIC'),NETZ_SRC_TBL_NM_v[7].cast('string').alias('INTRO_BROKER_NO'))
+    NETZ_SRC_TBL_NM_x_v=NETZ_SRC_TBL_NM_v
+    #.select(NETZ_SRC_TBL_NM_v[0].cast('string').alias('KEY_1'),NETZ_SRC_TBL_NM_v[1].cast('integer').alias('MI006_NO_OF_GUARANTOR'),NETZ_SRC_TBL_NM_v[2].cast('string').alias('MI006_BLDVTT_GUA1_NAME'),NETZ_SRC_TBL_NM_v[3].cast('string').alias('MI006_JOINT_BOR_CIF_NO'),NETZ_SRC_TBL_NM_v[4].cast('string').alias('SHORT_NAME'),NETZ_SRC_TBL_NM_v[5].cast('string').alias('NAME1'),NETZ_SRC_TBL_NM_v[6].cast('string').alias('INTRO_BROKER_INDIC'),NETZ_SRC_TBL_NM_v[7].cast('string').alias('INTRO_BROKER_NO'))
     
     NETZ_SRC_TBL_NM_x_v = NETZ_SRC_TBL_NM_x_v.selectExpr("RTRIM(KEY_1) AS KEY_1","MI006_NO_OF_GUARANTOR","MI006_BLDVTT_GUA1_NAME","RTRIM(MI006_JOINT_BOR_CIF_NO) AS MI006_JOINT_BOR_CIF_NO","SHORT_NAME","NAME1","RTRIM(INTRO_BROKER_INDIC) AS INTRO_BROKER_INDIC","RTRIM(INTRO_BROKER_NO) AS INTRO_BROKER_NO").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_NO_OF_GUARANTOR', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BLDVTT_GUA1_NAME', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_JOINT_BOR_CIF_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'SHORT_NAME', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'NAME1', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'INTRO_BROKER_INDIC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'INTRO_BROKER_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}]}))
     
@@ -398,7 +399,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_TBL_NM",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_TBL_NM",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -411,7 +412,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_52_x_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_52_x_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -424,7 +425,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_52",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_52",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -437,7 +438,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_CUSVAA_Lnk_Cusvaa_Tgt_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -450,7 +451,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="TGT_CUSVAA",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_CUSVAA",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",

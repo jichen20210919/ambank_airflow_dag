@@ -176,7 +176,7 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     
         (SELECT 
     
-            {{Curr_Date}} AS CURR_DATE,
+            DATE_DIFF({{Curr_Date}},'1900-01-01') + 1 AS CURR_DATE,
     
             SUBSTRING(BLDVNN.KEY_1, 1, 19) as B_KEY,
     
@@ -250,7 +250,8 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    BORM_X_BLDVNN_lnk_Source_v=BORM_X_BLDVNN_v.select(BORM_X_BLDVNN_v[0].cast('integer').alias('CURR_DATE'),BORM_X_BLDVNN_v[1].cast('string').alias('B_KEY'),BORM_X_BLDVNN_v[2].cast('string').alias('START_DATE_X'),BORM_X_BLDVNN_v[3].cast('string').alias('REPAYMENT_X'),BORM_X_BLDVNN_v[4].cast('string').alias('HEX_KEY'),BORM_X_BLDVNN_v[5].cast('integer').alias('RNK'),BORM_X_BLDVNN_v[6].cast('integer').alias('START_DATE_01'),BORM_X_BLDVNN_v[7].cast('decimal(17,3)').alias('REPAYMENT_01'),BORM_X_BLDVNN_v[8].cast('string').alias('REPAYMENT_TYPE_01'),BORM_X_BLDVNN_v[9].cast('decimal(17,3)').alias('PRINC_DUE_01'),BORM_X_BLDVNN_v[10].cast('decimal(17,3)').alias('INSUR_AMT_DUE_01'),BORM_X_BLDVNN_v[11].cast('integer').alias('POST_DATE'),BORM_X_BLDVNN_v[12].cast('decimal(17,3)').alias('BALANCE_01'),BORM_X_BLDVNN_v[13].cast('decimal(17,5)').alias('CREDIT_ARREARS'),BORM_X_BLDVNN_v[14].cast('integer').alias('CIV_ACT_COD_DAT'),BORM_X_BLDVNN_v[15].cast('string').alias('LEGAL_MARKER_FLAG'),BORM_X_BLDVNN_v[16].cast('string').alias('CIV_ACT_CODE'),BORM_X_BLDVNN_v[17].cast('string').alias('LGL_TAG'),BORM_X_BLDVNN_v[18].cast('integer').alias('LGL_TAG_DATE'))
+    BORM_X_BLDVNN_lnk_Source_v=BORM_X_BLDVNN_v
+    #.select(BORM_X_BLDVNN_v[0].cast('integer').alias('CURR_DATE'),BORM_X_BLDVNN_v[1].cast('string').alias('B_KEY'),BORM_X_BLDVNN_v[2].cast('string').alias('START_DATE_X'),BORM_X_BLDVNN_v[3].cast('string').alias('REPAYMENT_X'),BORM_X_BLDVNN_v[4].cast('string').alias('HEX_KEY'),BORM_X_BLDVNN_v[5].cast('integer').alias('RNK'),BORM_X_BLDVNN_v[6].cast('integer').alias('START_DATE_01'),BORM_X_BLDVNN_v[7].cast('decimal(17,3)').alias('REPAYMENT_01'),BORM_X_BLDVNN_v[8].cast('string').alias('REPAYMENT_TYPE_01'),BORM_X_BLDVNN_v[9].cast('decimal(17,3)').alias('PRINC_DUE_01'),BORM_X_BLDVNN_v[10].cast('decimal(17,3)').alias('INSUR_AMT_DUE_01'),BORM_X_BLDVNN_v[11].cast('integer').alias('POST_DATE'),BORM_X_BLDVNN_v[12].cast('decimal(17,3)').alias('BALANCE_01'),BORM_X_BLDVNN_v[13].cast('decimal(17,5)').alias('CREDIT_ARREARS'),BORM_X_BLDVNN_v[14].cast('integer').alias('CIV_ACT_COD_DAT'),BORM_X_BLDVNN_v[15].cast('string').alias('LEGAL_MARKER_FLAG'),BORM_X_BLDVNN_v[16].cast('string').alias('CIV_ACT_CODE'),BORM_X_BLDVNN_v[17].cast('string').alias('LGL_TAG'),BORM_X_BLDVNN_v[18].cast('integer').alias('LGL_TAG_DATE'))
     
     BORM_X_BLDVNN_lnk_Source_v = BORM_X_BLDVNN_lnk_Source_v.selectExpr("CURR_DATE","B_KEY","START_DATE_X","REPAYMENT_X","HEX_KEY","RNK","START_DATE_01","REPAYMENT_01","RTRIM(REPAYMENT_TYPE_01) AS REPAYMENT_TYPE_01","PRINC_DUE_01","INSUR_AMT_DUE_01","POST_DATE","BALANCE_01","CREDIT_ARREARS","CIV_ACT_COD_DAT","LEGAL_MARKER_FLAG","RTRIM(CIV_ACT_CODE) AS CIV_ACT_CODE","RTRIM(LGL_TAG) AS LGL_TAG","LGL_TAG_DATE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'CURR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_X', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'HEX_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'RNK', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'START_DATE_01', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'REPAYMENT_TYPE_01', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PRINC_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'INSUR_AMT_DUE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'POST_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BALANCE_01', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'CREDIT_ARREARS', 'type': 'decimal(17,5)', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_COD_DAT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'LEGAL_MARKER_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'CIV_ACT_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'LGL_TAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'LGL_TAG_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
@@ -660,7 +661,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="BORM_X_BLDVNN",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="BORM_X_BLDVNN",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -673,7 +674,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Sort_142_lnk_Source_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Sort_142_lnk_Source_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -686,7 +687,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Sort_142",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Sort_142",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -699,7 +700,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Copy_227_DSLink148X_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Copy_227_DSLink148X_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -712,7 +713,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Copy_227",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Copy_227",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -725,7 +726,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Copy_of_Transformer_149_DSLink148_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Copy_of_Transformer_149_DSLink148_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -738,7 +739,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Copy_of_Transformer_149",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Copy_of_Transformer_149",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -751,7 +752,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_241_DSLink151_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_241_DSLink151_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -764,7 +765,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_241",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_241",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -777,7 +778,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="TGT_BLDVNN_DSLink238_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_BLDVNN_DSLink238_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -790,7 +791,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="TGT_BLDVNN",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_BLDVNN",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",

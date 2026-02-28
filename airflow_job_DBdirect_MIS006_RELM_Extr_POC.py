@@ -196,7 +196,8 @@ def NETZ_SRC_RELM_DLCD(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_RELM_DLCD_lnk_Source_v=NETZ_SRC_RELM_DLCD_v.select(NETZ_SRC_RELM_DLCD_v[0].cast('string').alias('KEY_1'),NETZ_SRC_RELM_DLCD_v[1].cast('string').alias('R_KEY1'),NETZ_SRC_RELM_DLCD_v[2].cast('string').alias('ORIG_BRCH_CODE'),NETZ_SRC_RELM_DLCD_v[3].cast('string').alias('RECOURSE'),NETZ_SRC_RELM_DLCD_v[4].cast('decimal(17,3)').alias('CREDIT_LINE'),NETZ_SRC_RELM_DLCD_v[5].cast('string').alias('LOCAL_INCORPN'),NETZ_SRC_RELM_DLCD_v[6].cast('integer').alias('PRE_TRFR_APP_DT'),NETZ_SRC_RELM_DLCD_v[7].cast('decimal(17,3)').alias('PRE_TRFR_APPR'),NETZ_SRC_RELM_DLCD_v[8].cast('string').alias('DLR_CODE'),NETZ_SRC_RELM_DLCD_v[9].cast('string').alias('DLR_NAME'),NETZ_SRC_RELM_DLCD_v[10].cast('string').alias('DLR_LOCN_CODE'),NETZ_SRC_RELM_DLCD_v[11].cast('string').alias('CONTACT_PERSON'))
+    NETZ_SRC_RELM_DLCD_lnk_Source_v=NETZ_SRC_RELM_DLCD_v
+    #.select(NETZ_SRC_RELM_DLCD_v[0].cast('string').alias('KEY_1'),NETZ_SRC_RELM_DLCD_v[1].cast('string').alias('R_KEY1'),NETZ_SRC_RELM_DLCD_v[2].cast('string').alias('ORIG_BRCH_CODE'),NETZ_SRC_RELM_DLCD_v[3].cast('string').alias('RECOURSE'),NETZ_SRC_RELM_DLCD_v[4].cast('decimal(17,3)').alias('CREDIT_LINE'),NETZ_SRC_RELM_DLCD_v[5].cast('string').alias('LOCAL_INCORPN'),NETZ_SRC_RELM_DLCD_v[6].cast('integer').alias('PRE_TRFR_APP_DT'),NETZ_SRC_RELM_DLCD_v[7].cast('decimal(17,3)').alias('PRE_TRFR_APPR'),NETZ_SRC_RELM_DLCD_v[8].cast('string').alias('DLR_CODE'),NETZ_SRC_RELM_DLCD_v[9].cast('string').alias('DLR_NAME'),NETZ_SRC_RELM_DLCD_v[10].cast('string').alias('DLR_LOCN_CODE'),NETZ_SRC_RELM_DLCD_v[11].cast('string').alias('CONTACT_PERSON'))
     
     NETZ_SRC_RELM_DLCD_lnk_Source_v = NETZ_SRC_RELM_DLCD_lnk_Source_v.selectExpr("KEY_1","R_KEY1","RTRIM(ORIG_BRCH_CODE) AS ORIG_BRCH_CODE","RTRIM(RECOURSE) AS RECOURSE","CREDIT_LINE","RTRIM(LOCAL_INCORPN) AS LOCAL_INCORPN","PRE_TRFR_APP_DT","PRE_TRFR_APPR","RTRIM(DLR_CODE) AS DLR_CODE","RTRIM(DLR_NAME) AS DLR_NAME","RTRIM(DLR_LOCN_CODE) AS DLR_LOCN_CODE","RTRIM(CONTACT_PERSON) AS CONTACT_PERSON").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'KEY_1', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'R_KEY1', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'ORIG_BRCH_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(5)'}}, {'name': 'RECOURSE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'CREDIT_LINE', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'LOCAL_INCORPN', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'PRE_TRFR_APP_DT', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'PRE_TRFR_APPR', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'DLR_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'DLR_NAME', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(60)'}}, {'name': 'DLR_LOCN_CODE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'CONTACT_PERSON', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(40)'}}]}))
     
@@ -390,7 +391,8 @@ def NETZ_SRC_COLM_CHPM_INSU(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_COLM_CHPM_INSU_Colm_v=NETZ_SRC_COLM_CHPM_INSU_v.select(NETZ_SRC_COLM_CHPM_INSU_v[0].cast('string').alias('KEY_1'),NETZ_SRC_COLM_CHPM_INSU_v[1].cast('string').alias('KEY_2'),NETZ_SRC_COLM_CHPM_INSU_v[2].cast('decimal(17,3)').alias('PREMIUM'),NETZ_SRC_COLM_CHPM_INSU_v[3].cast('integer').alias('EXPIRY_DATE'),NETZ_SRC_COLM_CHPM_INSU_v[4].cast('string').alias('POLICY_NO_FIXED'),NETZ_SRC_COLM_CHPM_INSU_v[5].cast('integer').alias('START_DATE'),NETZ_SRC_COLM_CHPM_INSU_v[6].cast('string').alias('CONDITON'),NETZ_SRC_COLM_CHPM_INSU_v[7].cast('decimal(17,3)').alias('TENDR_RSLT_AMT'),NETZ_SRC_COLM_CHPM_INSU_v[8].cast('string').alias('R_KEY1'),NETZ_SRC_COLM_CHPM_INSU_v[9].cast('string').alias('IND'),NETZ_SRC_COLM_CHPM_INSU_v[10].cast('string').alias('INS_IND'),NETZ_SRC_COLM_CHPM_INSU_v[11].cast('string').alias('CPRO'))
+    NETZ_SRC_COLM_CHPM_INSU_Colm_v=NETZ_SRC_COLM_CHPM_INSU_v
+    #.select(NETZ_SRC_COLM_CHPM_INSU_v[0].cast('string').alias('KEY_1'),NETZ_SRC_COLM_CHPM_INSU_v[1].cast('string').alias('KEY_2'),NETZ_SRC_COLM_CHPM_INSU_v[2].cast('decimal(17,3)').alias('PREMIUM'),NETZ_SRC_COLM_CHPM_INSU_v[3].cast('integer').alias('EXPIRY_DATE'),NETZ_SRC_COLM_CHPM_INSU_v[4].cast('string').alias('POLICY_NO_FIXED'),NETZ_SRC_COLM_CHPM_INSU_v[5].cast('integer').alias('START_DATE'),NETZ_SRC_COLM_CHPM_INSU_v[6].cast('string').alias('CONDITON'),NETZ_SRC_COLM_CHPM_INSU_v[7].cast('decimal(17,3)').alias('TENDR_RSLT_AMT'),NETZ_SRC_COLM_CHPM_INSU_v[8].cast('string').alias('R_KEY1'),NETZ_SRC_COLM_CHPM_INSU_v[9].cast('string').alias('IND'),NETZ_SRC_COLM_CHPM_INSU_v[10].cast('string').alias('INS_IND'),NETZ_SRC_COLM_CHPM_INSU_v[11].cast('string').alias('CPRO'))
     
     NETZ_SRC_COLM_CHPM_INSU_Colm_v = NETZ_SRC_COLM_CHPM_INSU_Colm_v.selectExpr("KEY_1","KEY_2","PREMIUM","EXPIRY_DATE","RTRIM(POLICY_NO_FIXED) AS POLICY_NO_FIXED","START_DATE","CONDITON","TENDR_RSLT_AMT","R_KEY1","IND","INS_IND","CPRO").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'KEY_1', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'KEY_2', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'PREMIUM', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'EXPIRY_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'POLICY_NO_FIXED', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'START_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CONDITON', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'TENDR_RSLT_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'R_KEY1', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'IND', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'INS_IND', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'CPRO', 'type': 'string', 'nullable': True, 'metadata': {}}]}))
     
@@ -519,7 +521,8 @@ def NETZ_SRC_COLT(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_COLT_Colt_v=NETZ_SRC_COLT_v.select(NETZ_SRC_COLT_v[0].cast('string').alias('KEY_1'),NETZ_SRC_COLT_v[1].cast('decimal(18,3)').alias('MI006_TOTAL_REALISABLE_VAL'),NETZ_SRC_COLT_v[2].cast('decimal(18,3)').alias('MI006_LTV_VAL'))
+    NETZ_SRC_COLT_Colt_v=NETZ_SRC_COLT_v
+    #.select(NETZ_SRC_COLT_v[0].cast('string').alias('KEY_1'),NETZ_SRC_COLT_v[1].cast('decimal(18,3)').alias('MI006_TOTAL_REALISABLE_VAL'),NETZ_SRC_COLT_v[2].cast('decimal(18,3)').alias('MI006_LTV_VAL'))
     
     NETZ_SRC_COLT_Colt_v = NETZ_SRC_COLT_Colt_v.selectExpr("KEY_1","MI006_TOTAL_REALISABLE_VAL","MI006_LTV_VAL").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'KEY_1', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_TOTAL_REALISABLE_VAL', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_LTV_VAL', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}]}))
     
@@ -766,7 +769,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_RELM_DLCD",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_RELM_DLCD",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -781,7 +784,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_COLM_CHPM_INSU",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_COLM_CHPM_INSU",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -794,7 +797,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_COLT",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_COLT",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -813,7 +816,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18_lnk_Source_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18_lnk_Source_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -826,7 +829,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18_Colm_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18_Colm_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -839,7 +842,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18_Colt_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18_Colt_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -852,7 +855,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -865,7 +868,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_24_DSLink22_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_24_DSLink22_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -878,7 +881,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_24",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_24",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -891,7 +894,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="DS_TGT_RELM_RELX_lnk_RELM_Tgt_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="DS_TGT_RELM_RELX_lnk_RELM_Tgt_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -904,7 +907,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="DS_TGT_RELM_RELX",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="DS_TGT_RELM_RELX",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",

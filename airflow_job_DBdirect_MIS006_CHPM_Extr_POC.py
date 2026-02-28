@@ -234,7 +234,8 @@ def NETZ_SRC_BORM_BOAF(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_BORM_BOAF_lnk_Source_v=NETZ_SRC_BORM_BOAF_v.select(NETZ_SRC_BORM_BOAF_v[0].cast('string').alias('B_KEY'),NETZ_SRC_BORM_BOAF_v[1].cast('decimal(18,3)').alias('MI006_ARRS_INT_1'),NETZ_SRC_BORM_BOAF_v[2].cast('integer').alias('MI006_BRTH_EFF_DATE'),NETZ_SRC_BORM_BOAF_v[3].cast('integer').alias('MI006_REASON_CD'),NETZ_SRC_BORM_BOAF_v[4].cast('string').alias('DUEC'),NETZ_SRC_BORM_BOAF_v[5].cast('string').alias('DUET'),NETZ_SRC_BORM_BOAF_v[6].cast('string').alias('MI006_BORM_RM_CODE'),NETZ_SRC_BORM_BOAF_v[7].cast('string').alias('MI006_BORH_REBATE_PERC'),NETZ_SRC_BORM_BOAF_v[8].cast('decimal(18,5)').alias('MI006_BORM_ARR_INT_INCR'),NETZ_SRC_BORM_BOAF_v[9].cast('integer').alias('R'),NETZ_SRC_BORM_BOAF_v[10].cast('integer').alias('T'),NETZ_SRC_BORM_BOAF_v[11].cast('integer').alias('REC_NO'))
+    NETZ_SRC_BORM_BOAF_lnk_Source_v=NETZ_SRC_BORM_BOAF_v
+    #.select(NETZ_SRC_BORM_BOAF_v[0].cast('string').alias('B_KEY'),NETZ_SRC_BORM_BOAF_v[1].cast('decimal(18,3)').alias('MI006_ARRS_INT_1'),NETZ_SRC_BORM_BOAF_v[2].cast('integer').alias('MI006_BRTH_EFF_DATE'),NETZ_SRC_BORM_BOAF_v[3].cast('integer').alias('MI006_REASON_CD'),NETZ_SRC_BORM_BOAF_v[4].cast('string').alias('DUEC'),NETZ_SRC_BORM_BOAF_v[5].cast('string').alias('DUET'),NETZ_SRC_BORM_BOAF_v[6].cast('string').alias('MI006_BORM_RM_CODE'),NETZ_SRC_BORM_BOAF_v[7].cast('string').alias('MI006_BORH_REBATE_PERC'),NETZ_SRC_BORM_BOAF_v[8].cast('decimal(18,5)').alias('MI006_BORM_ARR_INT_INCR'),NETZ_SRC_BORM_BOAF_v[9].cast('integer').alias('R'),NETZ_SRC_BORM_BOAF_v[10].cast('integer').alias('T'),NETZ_SRC_BORM_BOAF_v[11].cast('integer').alias('REC_NO'))
     
     NETZ_SRC_BORM_BOAF_lnk_Source_v = NETZ_SRC_BORM_BOAF_lnk_Source_v.selectExpr("B_KEY","MI006_ARRS_INT_1","MI006_BRTH_EFF_DATE","MI006_REASON_CD","DUEC","DUET","MI006_BORM_RM_CODE","RTRIM(MI006_BORH_REBATE_PERC) AS MI006_BORH_REBATE_PERC","MI006_BORM_ARR_INT_INCR","R","T","REC_NO").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ARRS_INT_1', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BRTH_EFF_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_REASON_CD', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'DUEC', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'DUET', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORM_RM_CODE', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BORH_REBATE_PERC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'MI006_BORM_ARR_INT_INCR', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'R', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'T', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REC_NO', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
     
@@ -458,7 +459,8 @@ def NETZ_SRC_COLM_CHPM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_COLM_CHPM_Colm_v=NETZ_SRC_COLM_CHPM_v.select(NETZ_SRC_COLM_CHPM_v[0].cast('string').alias('B_KEY'),NETZ_SRC_COLM_CHPM_v[1].cast('string').alias('MI006_DESCRIPTION'),NETZ_SRC_COLM_CHPM_v[2].cast('integer').alias('MI006_CLASSIFIED_DATE'),NETZ_SRC_COLM_CHPM_v[3].cast('string').alias('MI006_GUA_CUSTO_NO'),NETZ_SRC_COLM_CHPM_v[4].cast('string').alias('MI006_AMORT_FLAG'),NETZ_SRC_COLM_CHPM_v[5].cast('decimal(18,5)').alias('MI006_ZECT_HANDLING_FEE'),NETZ_SRC_COLM_CHPM_v[6].cast('decimal(18,5)').alias('MI006_ZECT_OTHER_FEE'),NETZ_SRC_COLM_CHPM_v[7].cast('decimal(18,3)').alias('MI006_ZECT_EXP_HANDLING_AMT'),NETZ_SRC_COLM_CHPM_v[8].cast('string').alias('MI006_RIGH_NPL_COUNTER'),NETZ_SRC_COLM_CHPM_v[9].cast('integer').alias('MI006_RIGH_PL_DATE'),NETZ_SRC_COLM_CHPM_v[10].cast('decimal(20,5)').alias('MI006_ZECT_INPUTTAXNC1'))
+    NETZ_SRC_COLM_CHPM_Colm_v=NETZ_SRC_COLM_CHPM_v
+    #.select(NETZ_SRC_COLM_CHPM_v[0].cast('string').alias('B_KEY'),NETZ_SRC_COLM_CHPM_v[1].cast('string').alias('MI006_DESCRIPTION'),NETZ_SRC_COLM_CHPM_v[2].cast('integer').alias('MI006_CLASSIFIED_DATE'),NETZ_SRC_COLM_CHPM_v[3].cast('string').alias('MI006_GUA_CUSTO_NO'),NETZ_SRC_COLM_CHPM_v[4].cast('string').alias('MI006_AMORT_FLAG'),NETZ_SRC_COLM_CHPM_v[5].cast('decimal(18,5)').alias('MI006_ZECT_HANDLING_FEE'),NETZ_SRC_COLM_CHPM_v[6].cast('decimal(18,5)').alias('MI006_ZECT_OTHER_FEE'),NETZ_SRC_COLM_CHPM_v[7].cast('decimal(18,3)').alias('MI006_ZECT_EXP_HANDLING_AMT'),NETZ_SRC_COLM_CHPM_v[8].cast('string').alias('MI006_RIGH_NPL_COUNTER'),NETZ_SRC_COLM_CHPM_v[9].cast('integer').alias('MI006_RIGH_PL_DATE'),NETZ_SRC_COLM_CHPM_v[10].cast('decimal(20,5)').alias('MI006_ZECT_INPUTTAXNC1'))
     
     NETZ_SRC_COLM_CHPM_Colm_v = NETZ_SRC_COLM_CHPM_Colm_v.selectExpr("B_KEY","MI006_DESCRIPTION","MI006_CLASSIFIED_DATE","MI006_GUA_CUSTO_NO","RTRIM(MI006_AMORT_FLAG) AS MI006_AMORT_FLAG","MI006_ZECT_HANDLING_FEE","MI006_ZECT_OTHER_FEE","MI006_ZECT_EXP_HANDLING_AMT","MI006_RIGH_NPL_COUNTER","MI006_RIGH_PL_DATE","MI006_ZECT_INPUTTAXNC1").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_DESCRIPTION', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_CLASSIFIED_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_GUA_CUSTO_NO', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_AMORT_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'MI006_ZECT_HANDLING_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_OTHER_FEE', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_EXP_HANDLING_AMT', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_NPL_COUNTER', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RIGH_PL_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_INPUTTAXNC1', 'type': 'decimal(20,5)', 'nullable': True, 'metadata': {}}]}))
     
@@ -541,7 +543,8 @@ def NETZ_SRC_BLDVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_BLDVAA_Colt_v=NETZ_SRC_BLDVAA_v.select(NETZ_SRC_BLDVAA_v[0].cast('string').alias('B_KEY'),NETZ_SRC_BLDVAA_v[1].cast('string').alias('MI006_NO_OF_DISB_ON_NOTE'))
+    NETZ_SRC_BLDVAA_Colt_v=NETZ_SRC_BLDVAA_v
+    #.select(NETZ_SRC_BLDVAA_v[0].cast('string').alias('B_KEY'),NETZ_SRC_BLDVAA_v[1].cast('string').alias('MI006_NO_OF_DISB_ON_NOTE'))
     
     NETZ_SRC_BLDVAA_Colt_v = NETZ_SRC_BLDVAA_Colt_v.selectExpr("B_KEY","RTRIM(MI006_NO_OF_DISB_ON_NOTE) AS MI006_NO_OF_DISB_ON_NOTE").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_NO_OF_DISB_ON_NOTE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}]}))
     
@@ -701,7 +704,8 @@ def NETZ_SRC_Zect(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_Zect_Zect_v=NETZ_SRC_Zect_v.select(NETZ_SRC_Zect_v[0].cast('string').alias('B_KEY'),NETZ_SRC_Zect_v[1].cast('decimal(18,5)').alias('MI006_ZECT_OTHER_FEE_sum'))
+    NETZ_SRC_Zect_Zect_v=NETZ_SRC_Zect_v
+    #.select(NETZ_SRC_Zect_v[0].cast('string').alias('B_KEY'),NETZ_SRC_Zect_v[1].cast('decimal(18,5)').alias('MI006_ZECT_OTHER_FEE_sum'))
     
     NETZ_SRC_Zect_Zect_v = NETZ_SRC_Zect_Zect_v.selectExpr("B_KEY","MI006_ZECT_OTHER_FEE_sum").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'B_KEY', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_ZECT_OTHER_FEE_sum', 'type': 'decimal(18,5)', 'nullable': True, 'metadata': {}}]}))
     
@@ -1050,7 +1054,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_BORM_BOAF",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_BORM_BOAF",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1065,7 +1069,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_COLM_CHPM",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_COLM_CHPM",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1078,7 +1082,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_BLDVAA",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_BLDVAA",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1099,7 +1103,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_Zect",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_Zect",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1112,7 +1116,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_J_lnk_Source_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_J_lnk_Source_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1125,7 +1129,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18_Colm_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18_Colm_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1138,7 +1142,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18_Colt_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18_Colt_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1151,7 +1155,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18_Zect_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18_Zect_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1164,7 +1168,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_J",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_J",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1177,7 +1181,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18_Remove_Dupe_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18_Remove_Dupe_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1190,7 +1194,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Join_18",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Join_18",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1203,7 +1207,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_24_DSLink22_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_24_DSLink22_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1216,7 +1220,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_24",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_24",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1229,7 +1233,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="DS_TGT_CHPM_COLT_lnk_CHPM_Tgt_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -1242,7 +1246,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="DS_TGT_CHPM_COLT",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="DS_TGT_CHPM_COLT",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",

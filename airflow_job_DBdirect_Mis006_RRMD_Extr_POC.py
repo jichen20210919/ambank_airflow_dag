@@ -288,7 +288,8 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     #spark.sql(f"use spark_catalog.default").show()
     
-    NETZ_SRC_TBL_NM_lnk_Source__v=NETZ_SRC_TBL_NM_v.select(NETZ_SRC_TBL_NM_v[0].cast('string').alias('BORM_KEY_1'),NETZ_SRC_TBL_NM_v[1].cast('string').alias('MI006_MEMB_CUST_AC'),NETZ_SRC_TBL_NM_v[2].cast('integer').alias('rec_no'),NETZ_SRC_TBL_NM_v[3].cast('integer').alias('CNT_CAT_1'),NETZ_SRC_TBL_NM_v[4].cast('integer').alias('CNT_CAT_NOT_1'),NETZ_SRC_TBL_NM_v[5].cast('integer').alias('MAX_RR_DATE_CAT_1'),NETZ_SRC_TBL_NM_v[6].cast('integer').alias('MAX_RR_DATE_CAT_2'),NETZ_SRC_TBL_NM_v[7].cast('string').alias('ACCT_NO'),NETZ_SRC_TBL_NM_v[8].cast('string').alias('SEQ_NO'),NETZ_SRC_TBL_NM_v[9].cast('string').alias('RR_TYPE'),NETZ_SRC_TBL_NM_v[10].cast('string').alias('RR_REASON'),NETZ_SRC_TBL_NM_v[11].cast('string').alias('RR_CAT'),NETZ_SRC_TBL_NM_v[12].cast('string').alias('RR_SUB_CAT'),NETZ_SRC_TBL_NM_v[13].cast('string').alias('RR_COUNT'),NETZ_SRC_TBL_NM_v[14].cast('integer').alias('MP_EXP_DATE'),NETZ_SRC_TBL_NM_v[15].cast('integer').alias('RR_DATE'),NETZ_SRC_TBL_NM_v[16].cast('string').alias('VIRTUAL_MIA'),NETZ_SRC_TBL_NM_v[17].cast('decimal(5,0)').alias('VIRTUAL_DPD'),NETZ_SRC_TBL_NM_v[18].cast('decimal(18,3)').alias('VIRTUAL_PRIN_ARR'),NETZ_SRC_TBL_NM_v[19].cast('decimal(18,3)').alias('VIRTUAL_INT_ARR'),NETZ_SRC_TBL_NM_v[20].cast('string').alias('MI006_RNR_REPORTING_FLAG'),NETZ_SRC_TBL_NM_v[21].cast('string').alias('MI006_PROMPT_PAY_CNT'),NETZ_SRC_TBL_NM_v[22].cast('integer').alias('MI006_ORI_RR_DATE'),NETZ_SRC_TBL_NM_v[23].cast('string').alias('REHABILITAION_FLAG'),NETZ_SRC_TBL_NM_v[24].cast('decimal(2,0)').alias('RR_PROMPT_PAY_CNT'),NETZ_SRC_TBL_NM_v[25].cast('decimal(3,0)').alias('RNR_AMORT_MONTH'),NETZ_SRC_TBL_NM_v[26].cast('decimal(17,3)').alias('RNR_ARR_AMORT_AMT'),NETZ_SRC_TBL_NM_v[27].cast('string').alias('NPL_MP_EXP_ST'))
+    NETZ_SRC_TBL_NM_lnk_Source__v=NETZ_SRC_TBL_NM_v
+    #.select(NETZ_SRC_TBL_NM_v[0].cast('string').alias('BORM_KEY_1'),NETZ_SRC_TBL_NM_v[1].cast('string').alias('MI006_MEMB_CUST_AC'),NETZ_SRC_TBL_NM_v[2].cast('integer').alias('rec_no'),NETZ_SRC_TBL_NM_v[3].cast('integer').alias('CNT_CAT_1'),NETZ_SRC_TBL_NM_v[4].cast('integer').alias('CNT_CAT_NOT_1'),NETZ_SRC_TBL_NM_v[5].cast('integer').alias('MAX_RR_DATE_CAT_1'),NETZ_SRC_TBL_NM_v[6].cast('integer').alias('MAX_RR_DATE_CAT_2'),NETZ_SRC_TBL_NM_v[7].cast('string').alias('ACCT_NO'),NETZ_SRC_TBL_NM_v[8].cast('string').alias('SEQ_NO'),NETZ_SRC_TBL_NM_v[9].cast('string').alias('RR_TYPE'),NETZ_SRC_TBL_NM_v[10].cast('string').alias('RR_REASON'),NETZ_SRC_TBL_NM_v[11].cast('string').alias('RR_CAT'),NETZ_SRC_TBL_NM_v[12].cast('string').alias('RR_SUB_CAT'),NETZ_SRC_TBL_NM_v[13].cast('string').alias('RR_COUNT'),NETZ_SRC_TBL_NM_v[14].cast('integer').alias('MP_EXP_DATE'),NETZ_SRC_TBL_NM_v[15].cast('integer').alias('RR_DATE'),NETZ_SRC_TBL_NM_v[16].cast('string').alias('VIRTUAL_MIA'),NETZ_SRC_TBL_NM_v[17].cast('decimal(5,0)').alias('VIRTUAL_DPD'),NETZ_SRC_TBL_NM_v[18].cast('decimal(18,3)').alias('VIRTUAL_PRIN_ARR'),NETZ_SRC_TBL_NM_v[19].cast('decimal(18,3)').alias('VIRTUAL_INT_ARR'),NETZ_SRC_TBL_NM_v[20].cast('string').alias('MI006_RNR_REPORTING_FLAG'),NETZ_SRC_TBL_NM_v[21].cast('string').alias('MI006_PROMPT_PAY_CNT'),NETZ_SRC_TBL_NM_v[22].cast('integer').alias('MI006_ORI_RR_DATE'),NETZ_SRC_TBL_NM_v[23].cast('string').alias('REHABILITAION_FLAG'),NETZ_SRC_TBL_NM_v[24].cast('decimal(2,0)').alias('RR_PROMPT_PAY_CNT'),NETZ_SRC_TBL_NM_v[25].cast('decimal(3,0)').alias('RNR_AMORT_MONTH'),NETZ_SRC_TBL_NM_v[26].cast('decimal(17,3)').alias('RNR_ARR_AMORT_AMT'),NETZ_SRC_TBL_NM_v[27].cast('string').alias('NPL_MP_EXP_ST'))
     
     NETZ_SRC_TBL_NM_lnk_Source__v = NETZ_SRC_TBL_NM_lnk_Source__v.selectExpr("RTRIM(BORM_KEY_1) AS BORM_KEY_1","RTRIM(MI006_MEMB_CUST_AC) AS MI006_MEMB_CUST_AC","rec_no","CNT_CAT_1","CNT_CAT_NOT_1","MAX_RR_DATE_CAT_1","MAX_RR_DATE_CAT_2","RTRIM(ACCT_NO) AS ACCT_NO","RTRIM(SEQ_NO) AS SEQ_NO","RTRIM(RR_TYPE) AS RR_TYPE","RTRIM(RR_REASON) AS RR_REASON","RTRIM(RR_CAT) AS RR_CAT","RTRIM(RR_SUB_CAT) AS RR_SUB_CAT","RTRIM(RR_COUNT) AS RR_COUNT","MP_EXP_DATE","RR_DATE","VIRTUAL_MIA","VIRTUAL_DPD","VIRTUAL_PRIN_ARR","VIRTUAL_INT_ARR","MI006_RNR_REPORTING_FLAG","RTRIM(MI006_PROMPT_PAY_CNT) AS MI006_PROMPT_PAY_CNT","MI006_ORI_RR_DATE","RTRIM(REHABILITAION_FLAG) AS REHABILITAION_FLAG","RR_PROMPT_PAY_CNT","RNR_AMORT_MONTH","RNR_ARR_AMORT_AMT","RTRIM(NPL_MP_EXP_ST) AS NPL_MP_EXP_ST").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'BORM_KEY_1', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(19)'}}, {'name': 'MI006_MEMB_CUST_AC', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'rec_no', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CNT_CAT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'CNT_CAT_NOT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MAX_RR_DATE_CAT_1', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'MAX_RR_DATE_CAT_2', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'ACCT_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(16)'}}, {'name': 'SEQ_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(6)'}}, {'name': 'RR_TYPE', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_REASON', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'RR_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_SUB_CAT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_COUNT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'MP_EXP_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_MIA', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_DPD', 'type': 'decimal(5,0)', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_PRIN_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'VIRTUAL_INT_ARR', 'type': 'decimal(18,3)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_RNR_REPORTING_FLAG', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_PROMPT_PAY_CNT', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}, {'name': 'MI006_ORI_RR_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'REHABILITAION_FLAG', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(1)'}}, {'name': 'RR_PROMPT_PAY_CNT', 'type': 'decimal(2,0)', 'nullable': True, 'metadata': {}}, {'name': 'RNR_AMORT_MONTH', 'type': 'decimal(3,0)', 'nullable': True, 'metadata': {}}, {'name': 'RNR_ARR_AMORT_AMT', 'type': 'decimal(17,3)', 'nullable': True, 'metadata': {}}, {'name': 'NPL_MP_EXP_ST', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(2)'}}]}))
     
@@ -475,7 +476,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="NETZ_SRC_TBL_NM",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_TBL_NM",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -490,7 +491,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Sort_56_lnk_Source__Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Sort_56_lnk_Source__Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -503,7 +504,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Sort_56",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Sort_56",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -516,7 +517,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_52_lnk_Source_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_52_lnk_Source_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -529,7 +530,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="Transformer_52",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="Transformer_52",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -542,7 +543,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="TGT_RRMD_Lnk_RRMD_Tgt_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_RRMD_Lnk_RRMD_Tgt_Part",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
@@ -555,7 +556,7 @@ if not _SPARK_TASK_RUNNER:
             task_id="TGT_RRMD",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_RRMD",
-            deploy_mode="cluster",
+            deploy_mode="client",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
