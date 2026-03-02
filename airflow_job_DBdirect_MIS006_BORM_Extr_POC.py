@@ -453,7 +453,7 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     BORM.APPR_INDUSTRY_SECT AS MI006_APPR_INDUSTRY_SECT,
     
-    CAST(ROUND(BORM.INTEREST, 3) AS DECIMAL(18, 3)) AS MI006_INTEREST,
+    CAST(regexp_extract(CAST(BORM.INTEREST AS STRING), r'(\d+\.\d{3})', 1) AS DECIMAL(18, 3)) AS MI006_INTEREST,
     
     BORM.UNPD_PRIN_BAL AS MI006_UNPD_PRIN_BAL,
     
@@ -552,8 +552,8 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     ) AS MI006_APPR_AMT_SIGN,
     
     (BORM.LOAN_BAL - BORM.THEO_LOAN_BAL) AS MI006_AR_AMT,
-    
-    ROUND(BORM.ARR_INT_ACCR, 3) AS MI006_ARR_INT_ACCR,
+    CAST(regexp_extract(CAST(BORM.ARR_INT_ACCR AS STRING), r'(\d+\.\d{3})', 1)
+        AS DECIMAL(18, 3))  AS MI006_ARR_INT_ACCR,
     
     CASE WHEN BORM.ARR_INT_ACCR < 0 THEN '-' ELSE '+' END AS MI006_ARR_INT_ACCR_SIGN,
     
@@ -593,7 +593,8 @@ def NETZ_SRC_BORM(spark: SparkSession, sc: SparkContext, **kw_args):
     
         WHEN BORM.APP_AMT = 0 THEN 0
     
-        ELSE CAST(ROUND((BORM.ADV_VAL / BORM.APP_AMT) * 100, 4) AS DECIMAL(8, 4))
+        ELSE CAST(regexp_extract(CAST(((BORM.ADV_VAL / BORM.APP_AMT) * 100) AS STRING), r'(\d+\.\d{4})', 1)
+        AS DECIMAL(8, 4))
     
     END AS MI006_DISB_PERC,
     
