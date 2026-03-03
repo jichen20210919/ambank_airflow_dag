@@ -501,7 +501,7 @@ def NETZ_SRC_BLDVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     
         CASE 
     
-            WHEN TRIM(A.MI006_NO_OF_DISB_ON_NOTE) = '0 ' THEN NULL 
+            WHEN TRIM(A.MI006_NO_OF_DISB_ON_NOTE) = '0' THEN NULL 
     
             ELSE A.MI006_NO_OF_DISB_ON_NOTE 
     
@@ -525,7 +525,7 @@ def NETZ_SRC_BLDVAA(spark: SparkSession, sc: SparkContext, **kw_args):
     
             {{dbdir.pODS_SCHM}}.BLDVAA BLDVAA 
     
-            ON SUBSTRING(BLDVAA.KEY_1, 1, 19) = BORM.KEY_1
+            ON SUBSTRING(BLDVAA.KEY_1, 1, 12) = BORM.KEY_1
     
     ) A
     
