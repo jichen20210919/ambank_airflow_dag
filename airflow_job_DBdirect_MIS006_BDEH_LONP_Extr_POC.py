@@ -480,6 +480,8 @@ if not _SPARK_TASK_RUNNER:
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_TBL_NM",
             deploy_mode="client",
+            executor_memory="4g",
+            driver_memory="16g",
             principal="airflow@CLOUDERA.LOCAL",
             keytab="/etc/security/keytabs/airflow.keytab",
             py_files=f"/home/ec2-user/airflow/ds_functions.py,{__file__},/home/ec2-user/airflow/py_deps/jinja2.zip,/home/ec2-user/airflow/py_deps/markupsafe.zip",
