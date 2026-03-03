@@ -103,158 +103,90 @@ def NETZ_SRC_BASM(spark: SparkSession, sc: SparkContext, **kw_args):
     
     
     sql=Template("""SELECT 
-    
-        A.SOC_NO,
-    
-        A.BASE_ID,
-    
-        A.RATE_ID,
-    
-        (999999999 - A.BASM_DATE) AS BASM_DATE,
-    
-        A.BASM_TIME,
-    
-        CAST(A.RATE AS DECIMAL(16,3)) AS RATE,
-    
-        A.KEY_POINTER,
-    
-        CAST(
-    
-            CASE 
-    
-                WHEN A.KEY_POINTER <> '' AND A.KEY_POINTER IS NOT NULL 
-    
-                THEN COALESCE(A.RATE, 0) + COALESCE(X.RATE, 0) 
-    
-                ELSE A.RATE 
-    
-            END AS DECIMAL(16,4)
-    
-        ) AS EFF_RATE,
-    
-        L.INST_NO,
-    
-        L.BASM_BASE_ID AS L_BASM_BASE_ID,
-    
-        L.BASM_RATE_ID AS L_BASM_RATE_ID,
-    
-        CAST(
-    
-            CASE 
-    
-                WHEN A.BASE_ID <> '' AND A.BASE_ID IS NOT NULL 
-    
-                THEN A.BASE_ID 
-    
-                ELSE '' 
-    
-            END AS STRING
-    
-        ) AS MI006_BASM_BASE_ID,
-    
-        CAST(
-    
-            CASE 
-    
-                WHEN (A.RATE <> '' AND A.RATE IS NOT NULL) 
-    
-                THEN A.RATE 
-    
-                ELSE 0 
-    
-            END AS DECIMAL(9,5)
-    
-        ) AS MI006_PRIME_RATE,
-    
-        CAST(A.DESCRIPTION AS STRING) AS MI006_BASM_DESCRIPTION
-    
+    A.SOC_NO,
+    A.BASE_ID,
+    A.RATE_ID,
+    (999999999 - A.BASM_DATE) AS BASM_DATE,
+    A.BASM_TIME,
+    CAST(A.RATE AS DECIMAL(16,3)) AS RATE,
+    A.KEY_POINTER,
+    CAST(
+        CASE 
+            WHEN A.KEY_POINTER IS NOT NULL AND A.KEY_POINTER <> '' 
+                THEN COALESCE(A.RATE, 0) + COALESCE(X.RATE, 0)
+            ELSE A.RATE
+        END AS DECIMAL(16,4)
+    ) AS EFF_RATE,
+    L.INST_NO,
+    L.BASM_BASE_ID AS L_BASM_BASE_ID,
+    L.BASM_RATE_ID AS L_BASM_RATE_ID,
+    CAST(
+        CASE 
+            WHEN A.BASE_ID IS NOT NULL AND A.BASE_ID <> '' 
+                THEN A.BASE_ID
+            ELSE ''
+        END AS STRING
+    ) AS MI006_BASM_BASE_ID,
+    CAST(
+        CASE 
+            WHEN A.RATE IS NOT NULL
+                THEN A.RATE
+            ELSE 0
+        END AS DECIMAL(9,5)
+    ) AS MI006_PRIME_RATE,
+    CAST(A.DESCRIPTION AS STRING) AS MI006_BASM_DESCRIPTION
+FROM (
+    SELECT 
+        BASM.SOC_NO,
+        BASM.BASE_ID,
+        BASM.RATE_ID,
+        BASM.BASM_DATE,
+        BASM.BASM_TIME,
+        BASM.RATE,
+        BASM.KEY_POINTER,
+        BASM.DESCRIPTION
+    FROM bronze.BASM BASM
+    WHERE DATE_DIFF({{Curr_Date}},'1899-12-31') > 999999999 - BASM.BASM_DATE   
+) A
+LEFT OUTER JOIN (
+    SELECT 
+        SOC_NO,
+        BASE_ID,
+        RATE_ID,
+        RATE,
+        KEY_POINTER,
+        BASM_DATE,
+        BASM_TIME
     FROM (
-    
         SELECT 
-    
-            BASM.SOC_NO,
-    
-            BASM.BASE_ID,
-    
-            BASM.RATE_ID,
-    
-            BASM.BASM_DATE,
-    
-            BASM.BASM_TIME,
-    
-            BASM.RATE,
-    
-            BASM.KEY_POINTER,
-    
-            BASM.DESCRIPTION
-    
-        FROM {{dbdir.pODS_SCHM}}.BASM
-    
-        WHERE {{Curr_Date}} > 999999999 - BASM.BASM_DATE
-    
-    ) A 
-    
-    LEFT OUTER JOIN (
-    
-        SELECT * FROM (
-    
-            SELECT 
-    
-                SOC_NO,
-    
-                BASE_ID,
-    
-                RATE_ID,
-    
-                RATE,
-    
-                KEY_POINTER,
-    
-                BASM_DATE,
-    
-                BASM_TIME,
-    
-                ROW_NUMBER() OVER(
-    
-                    PARTITION BY SOC_NO, BASE_ID, RATE_ID 
-    
-                    ORDER BY (999999999 - BASM_DATE) DESC, BASM_TIME
-    
-                ) AS Row
-    
-            FROM {{dbdir.pODS_SCHM}}.BASM
-    
-            WHERE (41941 > 999999999 - BASM.BASM_DATE)
-    
-            AND BASE_ID IN (
-    
+            SOC_NO,
+            BASE_ID,
+            RATE_ID,
+            RATE,
+            KEY_POINTER,
+            BASM_DATE,
+            BASM_TIME,
+            ROW_NUMBER() OVER (
+                PARTITION BY SOC_NO, BASE_ID, RATE_ID
+                ORDER BY (999999999 - BASM_DATE) DESC, BASM_TIME
+            ) AS rn
+        FROM bronze.BASM
+        WHERE (41941 > 999999999 - BASM.BASM_DATE)
+          AND BASE_ID IN (
                 SELECT DISTINCT KEY_POINTER
-    
-                FROM {{dbdir.pODS_SCHM}}.BASM
-    
-                WHERE KEY_POINTER <> '' AND KEY_POINTER IS NOT NULL
-    
-            )
-    
-        ) K
-    
-        WHERE Row = 1
-    
-    ) X 
-    
-        ON A.SOC_NO = X.SOC_NO 
-    
-        AND X.BASE_ID = A.KEY_POINTER 
-    
-        AND A.RATE_ID = X.RATE_ID
-    
-    LEFT OUTER JOIN {{dbdir.pODS_SCHM}}.LONP L 
-    
-        ON A.SOC_NO = L.INST_NO 
-    
-        AND A.BASE_ID = L.BASM_BASE_ID 
-    
-        AND A.RATE_ID = L.BASM_RATE_ID""").render(job_params)
+                FROM bronze.BASM
+                WHERE KEY_POINTER IS NOT NULL AND KEY_POINTER <> ''
+          )
+    ) K
+    WHERE rn = 1
+) X
+    ON A.SOC_NO = X.SOC_NO
+   AND X.BASE_ID = A.KEY_POINTER
+   AND A.RATE_ID = X.RATE_ID
+LEFT OUTER JOIN bronze.LONP L
+    ON A.SOC_NO  = L.INST_NO
+   AND A.BASE_ID = L.BASM_BASE_ID
+   AND A.RATE_ID = L.BASM_RATE_ID""").render(job_params)
     
     log.info(f"execute sql query {sql}")
     
@@ -1411,15 +1343,14 @@ def srt_KeyChange(spark: SparkSession, sc: SparkContext, **kw_args):
     
     window_spec = Window.orderBy("SOC_NO","BASE_ID","RATE_ID")
     columns_to_hash = ["SOC_NO","BASE_ID","RATE_ID"]
-    srt_KeyChange_fil_KeyChange_v_0 = srt_KeyChange_v.orderBy(col('SOC_NO').asc(),col('BASE_ID').asc(),col('RATE_ID').asc()).withColumn("KEY_HASH", F.hash(*columns_to_hash))
-    df = srt_KeyChange_fil_KeyChange_v_0.withColumn("_PREV_KEY_HASH", F.lag("SOC_NO").over(window_spec))
+    df = srt_KeyChange_v.orderBy(col('SOC_NO').asc(),col('BASE_ID').asc(),col('RATE_ID').asc()).withColumn("KEY_HASH", F.hash(*columns_to_hash)).withColumn("_PREV_KEY_HASH", F.lag("KEY_HASH").over(window_spec)).withColumn("KeyChange",F.when(F.col("_PREV_KEY_HASH").isNull() | (F.col("_PREV_KEY_HASH") != F.col("KEY_HASH")),1).otherwise(0))
 
     print(df.schema)
     # KeyChange() logic: 1 if changed (or first row), 0 if same
-    df = df.withColumn("KeyChange", 
-        F.when(F.col("_PREV_KEY_HASH").isNull() | (F.col("_PREV_KEY_HASH") != F.col("KEY_HASH")), 1)
-        .otherwise(0)
-    )
+    # df = df.withColumn("KeyChange", 
+    #     F.when(F.col("_PREV_KEY_HASH").isNull() | (F.col("_PREV_KEY_HASH") != F.col("KEY_HASH")), 1)
+    #     .otherwise(0)
+    # )
     srt_KeyChange_fil_KeyChange_v = df.select(col('SOC_NO').cast('string').alias('SOC_NO'),col('BASE_ID').cast('string').alias('BASE_ID'),col('RATE_ID').cast('string').alias('RATE_ID'),col('BASM_DATE').cast('integer').alias('BASM_DATE'),col('BASM_TIME').cast('integer').alias('BASM_TIME'),col('RATE').cast('decimal(16,3)').alias('RATE'),col('KEY_POINTER').cast('string').alias('KEY_POINTER'),col('EFF_RATE').cast('decimal(16,4)').alias('EFF_RATE'),col('INST_NO').cast('string').alias('INST_NO'),col('L_BASM_BASE_ID').cast('string').alias('L_BASM_BASE_ID'),col('L_BASM_RATE_ID').cast('string').alias('L_BASM_RATE_ID'),col('MI006_BASM_BASE_ID').cast('string').alias('MI006_BASM_BASE_ID'),col('MI006_PRIME_RATE').cast('decimal(9,5)').alias('MI006_PRIME_RATE'),col('MI006_BASM_DESCRIPTION').cast('string').alias('MI006_BASM_DESCRIPTION'),expr("""KeyChange""").cast('integer').alias('keyChange'))
     
     srt_KeyChange_fil_KeyChange_v = srt_KeyChange_fil_KeyChange_v.selectExpr("RTRIM(SOC_NO) AS SOC_NO","RTRIM(BASE_ID) AS BASE_ID","RTRIM(RATE_ID) AS RATE_ID","BASM_DATE","BASM_TIME","RATE","RTRIM(KEY_POINTER) AS KEY_POINTER","EFF_RATE","RTRIM(INST_NO) AS INST_NO","RTRIM(L_BASM_BASE_ID) AS L_BASM_BASE_ID","RTRIM(L_BASM_RATE_ID) AS L_BASM_RATE_ID","MI006_BASM_BASE_ID","MI006_PRIME_RATE","MI006_BASM_DESCRIPTION","keyChange").to(StructType.fromJson({'type': 'struct', 'fields': [{'name': 'SOC_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'BASE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'RATE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'BASM_DATE', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'BASM_TIME', 'type': 'integer', 'nullable': True, 'metadata': {}}, {'name': 'RATE', 'type': 'decimal(16,3)', 'nullable': True, 'metadata': {}}, {'name': 'KEY_POINTER', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'EFF_RATE', 'type': 'decimal(16,4)', 'nullable': True, 'metadata': {}}, {'name': 'INST_NO', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(3)'}}, {'name': 'L_BASM_BASE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'L_BASM_RATE_ID', 'type': 'string', 'nullable': True, 'metadata': {'__CHAR_VARCHAR_TYPE_STRING': 'char(4)'}}, {'name': 'MI006_BASM_BASE_ID', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'MI006_PRIME_RATE', 'type': 'decimal(9,5)', 'nullable': True, 'metadata': {}}, {'name': 'MI006_BASM_DESCRIPTION', 'type': 'string', 'nullable': True, 'metadata': {}}, {'name': 'keyChange', 'type': 'integer', 'nullable': True, 'metadata': {}}]}))
@@ -1468,7 +1399,7 @@ def fil_KeyChange(spark: SparkSession, sc: SparkContext, **kw_args):
     
     fil_KeyChange_fil_KeyChange_Part_v=spark.table('datastage_temp_job_DBdirect_MIS006_BOIS_Extr_POC__fil_KeyChange_fil_KeyChange_Part_v')
     
-    fil_KeyChange_v = fil_KeyChange_fil_KeyChange_Part_v
+    fil_KeyChange_v = fil_KeyChange_fil_KeyChange_Part_v.filter("KeyChange=1")
     
     fil_KeyChange_DSLink148_v_0 = fil_KeyChange_v
     
