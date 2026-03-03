@@ -168,7 +168,7 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     
         LEFT OUTER JOIN {{dbdir.pODS_SCHM}}.BLDVLL BLDVLL 
     
-            ON SUBSTRING(BLDVLL.KEY_1, 1, 19) = BORM.KEY_1
+            ON SUBSTRING(BLDVLL.KEY_1, 1, 12) = BORM.KEY_1
     
         ) a
     
@@ -177,15 +177,16 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
         (SELECT 
     
             DATE_DIFF({{Curr_Date}},'1900-01-01') + 1 AS CURR_DATE,
-    
-            SUBSTRING(BLDVNN.KEY_1, 1, 19) as B_KEY,
+            --has space, use 12 instead of 19, because it has space
+            -- since data type is string instead of char(23)    
+            SUBSTRING(BLDVNN.KEY_1, 1, 12) as B_KEY,
     
             CASE
-                WHEN BLDVNN.START_DATE_01 IS NULL OR BLDVNN.START_DATE_02 IS NULL OR BLDVNN.START_DATE_03 IS NULL
-                  OR BLDVNN.START_DATE_04 IS NULL OR BLDVNN.START_DATE_05 IS NULL OR BLDVNN.START_DATE_06 IS NULL
-                  OR BLDVNN.START_DATE_07 IS NULL OR BLDVNN.START_DATE_08 IS NULL OR BLDVNN.START_DATE_09 IS NULL
-                  OR BLDVNN.START_DATE_10 IS NULL OR BLDVNN.START_DATE_11 IS NULL OR BLDVNN.START_DATE_12 IS NULL
-                  OR BLDVNN.START_DATE_13 IS NULL OR BLDVNN.START_DATE_14 IS NULL OR BLDVNN.START_DATE_15 IS NULL
+                WHEN BLDVNN.START_DATE_01 IS NULL AND BLDVNN.START_DATE_02 IS NULL AND BLDVNN.START_DATE_03 IS NULL
+                  AND BLDVNN.START_DATE_04 IS NULL AND BLDVNN.START_DATE_05 IS NULL AND BLDVNN.START_DATE_06 IS NULL
+                  AND BLDVNN.START_DATE_07 IS NULL AND BLDVNN.START_DATE_08 IS NULL AND BLDVNN.START_DATE_09 IS NULL
+                  AND BLDVNN.START_DATE_10 IS NULL AND BLDVNN.START_DATE_11 IS NULL AND BLDVNN.START_DATE_12 IS NULL
+                  AND BLDVNN.START_DATE_13 IS NULL AND BLDVNN.START_DATE_14 IS NULL AND BLDVNN.START_DATE_15 IS NULL
                 THEN NULL
                 ELSE CONCAT_WS(',',
                     BLDVNN.START_DATE_01, BLDVNN.START_DATE_02, BLDVNN.START_DATE_03,
@@ -197,11 +198,11 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
             END as START_DATE_X,
     
             CASE
-                WHEN BLDVNN.REPAYMENT_01 IS NULL OR BLDVNN.REPAYMENT_02 IS NULL OR BLDVNN.REPAYMENT_03 IS NULL
-                  OR BLDVNN.REPAYMENT_04 IS NULL OR BLDVNN.REPAYMENT_05 IS NULL OR BLDVNN.REPAYMENT_06 IS NULL
-                  OR BLDVNN.REPAYMENT_07 IS NULL OR BLDVNN.REPAYMENT_08 IS NULL OR BLDVNN.REPAYMENT_09 IS NULL
-                  OR BLDVNN.REPAYMENT_10 IS NULL OR BLDVNN.REPAYMENT_11 IS NULL OR BLDVNN.REPAYMENT_12 IS NULL
-                  OR BLDVNN.REPAYMENT_13 IS NULL OR BLDVNN.REPAYMENT_14 IS NULL OR BLDVNN.REPAYMENT_15 IS NULL
+                WHEN BLDVNN.REPAYMENT_01 IS NULL AND BLDVNN.REPAYMENT_02 IS NULL AND BLDVNN.REPAYMENT_03 IS NULL
+                  AND BLDVNN.REPAYMENT_04 IS NULL AND BLDVNN.REPAYMENT_05 IS NULL AND BLDVNN.REPAYMENT_06 IS NULL
+                  AND BLDVNN.REPAYMENT_07 IS NULL AND BLDVNN.REPAYMENT_08 IS NULL AND BLDVNN.REPAYMENT_09 IS NULL
+                  AND BLDVNN.REPAYMENT_10 IS NULL AND BLDVNN.REPAYMENT_11 IS NULL AND BLDVNN.REPAYMENT_12 IS NULL
+                  AND BLDVNN.REPAYMENT_13 IS NULL AND BLDVNN.REPAYMENT_14 IS NULL AND BLDVNN.REPAYMENT_15 IS NULL
                 THEN NULL
                 ELSE CONCAT_WS(',',
                     BLDVNN.REPAYMENT_01, BLDVNN.REPAYMENT_02, BLDVNN.REPAYMENT_03,
@@ -263,7 +264,7 @@ def BORM_X_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(BORM_X_BLDVNN_lnk_Source_v.count()))
     
-    BORM_X_BLDVNN_lnk_Source_v.show(1000,False)
+    BORM_X_BLDVNN_lnk_Source_v.show(100,False)
     
     BORM_X_BLDVNN_lnk_Source_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__BORM_X_BLDVNN_lnk_Source_v")
 def Sort_142_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -286,7 +287,7 @@ def Sort_142_lnk_Source_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(Sort_142_lnk_Source_Part_v.count()))
     
-    Sort_142_lnk_Source_Part_v.show(1000,False)
+    Sort_142_lnk_Source_Part_v.show(100,False)
     
     Sort_142_lnk_Source_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_lnk_Source_Part_v")
 def Sort_142(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -315,7 +316,7 @@ def Sort_142(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(Sort_142_DSLink148X_v.count()))
     
-    Sort_142_DSLink148X_v.show(1000,False)
+    Sort_142_DSLink148X_v.show(100,False)
     
     Sort_142_DSLink148X_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Sort_142_DSLink148X_v")
 def Copy_227_DSLink148X_Part(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -338,7 +339,7 @@ def Copy_227_DSLink148X_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(Copy_227_DSLink148X_Part_v.count()))
     
-    Copy_227_DSLink148X_Part_v.show(1000,False)
+    Copy_227_DSLink148X_Part_v.show(100,False)
     
     Copy_227_DSLink148X_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148X_Part_v")
 def Copy_227(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -365,7 +366,7 @@ def Copy_227(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(Copy_227_DSLink148_v.count()))
     
-    Copy_227_DSLink148_v.show(1000,False)
+    Copy_227_DSLink148_v.show(100,False)
     
     Copy_227_DSLink148_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_227_DSLink148_v")
 def Copy_of_Transformer_149_DSLink148_Part(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -388,7 +389,7 @@ def Copy_of_Transformer_149_DSLink148_Part(spark: SparkSession, sc: SparkContext
     
     print("count:{}".format(Copy_of_Transformer_149_DSLink148_Part_v.count()))
     
-    Copy_of_Transformer_149_DSLink148_Part_v.show(1000,False)
+    Copy_of_Transformer_149_DSLink148_Part_v.show(100,False)
     
     Copy_of_Transformer_149_DSLink148_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink148_Part_v")
 def Copy_of_Transformer_149(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -518,15 +519,15 @@ def Copy_of_Transformer_149(spark: SparkSession, sc: SparkContext, **kw_args):
         col('B_KEY').cast('string').alias('B_KEY'),
         expr("""IF(Z = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',C), ',', Z)))""").cast('integer').alias('START_DATE_X'),
         expr("""IF(Z = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',F), ',', Z)))""").cast('decimal(17,3)').alias('REPAYMENT_X'),
-        expr("""DS_FIELD(CONCAT_WS(',',SD), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('START_DATE_01'),
-        expr("""IF(P = 0, REPAYMENT_01, (DS_FIELD(CONCAT_WS(',',REP), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('REPAYMENT_01'),
+        expr("""DS_FIELD(CONCAT_WS(',',SD), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, FLOOR(P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('START_DATE_01'),
+        expr("""IF(P = 0, REPAYMENT_01, (DS_FIELD(CONCAT_WS(',',REP), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, FLOOR(P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('REPAYMENT_01'),
         expr("""IF(DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 1) = '', NULL, DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 1))""").cast('string').alias('REPAYMENT_TYPE_01'),
         expr("""IF(DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 2) = '', NULL, DS_FIELD(DS_FIELD(CONCAT_WS(',',RT), ',', (IF(P > 600, 41, (IF(P > 500, 34, (IF(P > 400, 27, (IF(P > 300, 21, (IF(P > 200, 14, (IF(P > 100, 7, (IF(P = 0, (IF(E / 15 > 40, 41, (IF(E / 15 > 33, 34, (IF(E / 15 > 26, 27, IF(E / 15 > 20, 21, (IF(E / 15 > 13, 14, (IF(E / 15 > 6, 7, 1))))))))))), 1))))))))))))))), '~', 2))""").cast('decimal(17,3)').alias('PRINC_DUE_01'),
         col('INSUR_AMT_DUE_01').cast('decimal(17,3)').alias('INSUR_AMT_DUE_01'),
-        expr("""DS_FIELD(CONCAT_WS(',',COL), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('POST_DATE'),
-        expr("""IF(P = 0, BALANCE_01, (DS_FIELD(CONCAT_WS(',',BAL), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, (P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('BALANCE_01'),
+        expr("""DS_FIELD(CONCAT_WS(',',COL), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, FLOOR(P / 15), (FLOOR(P / 15) + 1))))))""").cast('integer').alias('POST_DATE'),
+        expr("""IF(P = 0, BALANCE_01, (DS_FIELD(CONCAT_WS(',',BAL), ',', (IF(P = 0, FLOOR(E / 15), (IF(P % 15 = 0, FLOOR(P / 15), (FLOOR(P / 15) + 1))))))))""").cast('decimal(17,3)').alias('BALANCE_01'),
         expr("""IF(P = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',C), ',', P - 1)))""").cast('integer').alias('LAST_PAY_DATE_X'),
-        expr("""IF(R1 = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',C), ',', R1)))""").cast('integer').alias('NEXT_DUE_DATE_X'),
+        expr("""IF(R1 = 0, 0, DS_STRINGTODECIMAL(DS_FIELD(CONCAT_WS(',',C), ',', CAST(R1 as INT))))""").cast('integer').alias('NEXT_DUE_DATE_X'),
         col('CIV_ACT_COD_DAT').cast('integer').alias('CIV_ACT_COD_DAT'),
         col('LEGAL_MARKER_FLAG').cast('string').alias('LEGAL_MARKER_FLAG'),
         col('CIV_ACT_CODE').cast('string').alias('CIV_ACT_CODE'),
@@ -545,7 +546,7 @@ def Copy_of_Transformer_149(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(Copy_of_Transformer_149_DSLink151_v.count()))
     
-    Copy_of_Transformer_149_DSLink151_v.show(1000,False)
+    Copy_of_Transformer_149_DSLink151_v.show(100,False)
     
     Copy_of_Transformer_149_DSLink151_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Copy_of_Transformer_149_DSLink151_v")
 def Transformer_241_DSLink151_Part(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -568,7 +569,7 @@ def Transformer_241_DSLink151_Part(spark: SparkSession, sc: SparkContext, **kw_a
     
     print("count:{}".format(Transformer_241_DSLink151_Part_v.count()))
     
-    Transformer_241_DSLink151_Part_v.show(1000,False)
+    Transformer_241_DSLink151_Part_v.show(100,False)
     
     Transformer_241_DSLink151_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink151_Part_v")
 def Transformer_241(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -595,7 +596,7 @@ def Transformer_241(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(Transformer_241_DSLink238_v.count()))
     
-    Transformer_241_DSLink238_v.show(1000,False)
+    Transformer_241_DSLink238_v.show(100,False)
     
     Transformer_241_DSLink238_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__Transformer_241_DSLink238_v")
 def TGT_BLDVNN_DSLink238_Part(spark: SparkSession, sc: SparkContext, **kw_args):
@@ -618,7 +619,7 @@ def TGT_BLDVNN_DSLink238_Part(spark: SparkSession, sc: SparkContext, **kw_args):
     
     print("count:{}".format(TGT_BLDVNN_DSLink238_Part_v.count()))
     
-    TGT_BLDVNN_DSLink238_Part_v.show(1000,False)
+    TGT_BLDVNN_DSLink238_Part_v.show(100,False)
     
     TGT_BLDVNN_DSLink238_Part_v.write.mode("overwrite").saveAsTable("datastage_temp_job_DBdirect_Mis006_BLDVNN_Extr_POC__TGT_BLDVNN_DSLink238_Part_v")
 def TGT_BLDVNN(spark: SparkSession, sc: SparkContext, **kw_args):
