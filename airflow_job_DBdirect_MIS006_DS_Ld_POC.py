@@ -890,10 +890,14 @@ if not _SPARK_TASK_RUNNER:
         job_DBdirect_MIS006_DS_Ld_POC_task = job_DBdirect_MIS006_DS_Ld_POC()
         
         Job_VIEW_task = Job_VIEW()
-        
+        spark_params = Variable.get("SPARK_PARAMS",deserialize_json=True)
 
         SPARK_CONF_COMMON = {
-            "spark.executor.instances": "6",
+            "spark.executor.instances": spark_params['spark.executor.instances'],
+            "spark.sql.adaptive.enabled": "true", 
+            "spark.sql.adaptive.skewJoin.enabled": "true", 
+            "spark.sql.adaptive.skewJoin.skewedPartitionFactor": "5", 
+            "spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes": "256MB",
             "spark.executor.memory": "6g",
             "spark.executor.memoryOverhead": "1g",
             "spark.driver.memory": "4g",

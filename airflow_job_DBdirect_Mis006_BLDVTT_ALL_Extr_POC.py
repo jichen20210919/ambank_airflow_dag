@@ -766,9 +766,9 @@ def NETZ_SRC_TBL_NM(spark: SparkSession, sc: SparkContext, **kw_args):
     
             AND CUSVBB.DELI = 0
     
-            AND CUSVBB.EFFE_DATE <= CAST(DATE_DIFF({{Curr_Date}},'1900-01-01') AS INT)
+            AND CUSVBB.EFFE_DATE <= CAST(DATE_DIFF({{Curr_Date}},'1899-12-31') AS INT)
     
-            AND CUSVBB.EXPI_DATE >= CAST(DATE_DIFF({{Curr_Date}},'1900-01-01') AS INT)
+            AND CUSVBB.EXPI_DATE >= CAST(DATE_DIFF({{Curr_Date}},'1899-12-31') AS INT)
     
             --AND HEX(CUSVBB.RECNO) = HEX('00000001')
     
@@ -952,9 +952,10 @@ if not _SPARK_TASK_RUNNER:
         job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC_task = job_DBdirect_Mis006_BLDVTT_ALL_Extr_POC()
         
         Job_VIEW_task = Job_VIEW()
+        spark_params = Variable.get("SPARK_PARAMS",deserialize_json=True)
         
         NETZ_SRC_TBL_NM_task = SparkSubmitOperator(
-            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            conf={"spark.executor.instances": spark_params['spark.executor.instances'], "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
             task_id="NETZ_SRC_TBL_NM",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="NETZ_SRC_TBL_NM",
@@ -971,7 +972,7 @@ if not _SPARK_TASK_RUNNER:
         V0A59_task = V0A59()
         
         xfm_ln_All_Dir_Src_Part_task = SparkSubmitOperator(
-            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            conf={"spark.executor.instances": spark_params['spark.executor.instances'], "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
             task_id="xfm_ln_All_Dir_Src_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="xfm_ln_All_Dir_Src_Part",
@@ -984,7 +985,7 @@ if not _SPARK_TASK_RUNNER:
         )
         
         xfm_task = SparkSubmitOperator(
-            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            conf={"spark.executor.instances": spark_params['spark.executor.instances'], "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
             task_id="xfm",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="xfm",
@@ -997,7 +998,7 @@ if not _SPARK_TASK_RUNNER:
         )
         
         TGT_Direct_All_ln_ALL_Direct_Tgt_Part_task = SparkSubmitOperator(
-            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            conf={"spark.executor.instances": spark_params['spark.executor.instances'], "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
             task_id="TGT_Direct_All_ln_ALL_Direct_Tgt_Part",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_Direct_All_ln_ALL_Direct_Tgt_Part",
@@ -1010,7 +1011,7 @@ if not _SPARK_TASK_RUNNER:
         )
         
         TGT_Direct_All_task = SparkSubmitOperator(
-            conf={"spark.executor.instances": "10", "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
+            conf={"spark.executor.instances": spark_params['spark.executor.instances'], "spark.sql.catalogImplementation": "hive", "spark.sql.defaultCatalog": "spark_catalog", "spark.hadoop.hive.metastore.uris": "thrift://cloudera-master.internal:9083", "spark.jars": "/opt/cloudera/parcels/CDH-7.3.1-1.cdh7.3.1.p0.60371244/jars/iceberg-spark-runtime-3.4_2.12-1.3.1.7.3.1.0-197.jar", "spark.dynamicAllocation.enabled": "false", "spark.shuffle.service.enabled": "false"},
             task_id="TGT_Direct_All",
             application="/home/ec2-user/airflow/spark_apps/spark_task_runner.py",
             name="TGT_Direct_All",
